@@ -1,0 +1,6 @@
+{
+  "appTitle": "health_record",
+  "@appTitle": {
+    "description": "The title of the application"
+  }
+}
