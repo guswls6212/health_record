@@ -17,12 +17,21 @@ class _StepCalendarState extends State<StepCalendar> {
     // 해당 월의 마지막 날 구하기
     var lastDayOfMonth = DateTime(month.year, month.month + 1, 0);
     var numberOfDaysInMonth = lastDayOfMonth.day;
-
+    print('''
+    firstDayOfMonth: ${firstDayOfMonth}
+    firstDayOfWeek: ${firstDayOfWeek}
+    lastDayOfMonth: ${lastDayOfMonth}
+    numberOfDaysInMonth: ${numberOfDaysInMonth}
+    datetime: ${DateTime(month.year, month.month, -1)}
+    ''');
     // 날짜와 요일 정보를 포함하는 리스트 생성
     List<DateTime> days = [];
-    for (var i = 1 - firstDayOfWeek; i <= numberOfDaysInMonth; i++) {
-      days.add(DateTime(month.year, month.month, i + firstDayOfWeek - 1));
+    // monday start(월요일: 1, 일요일: 7)
+    // 6줄버전
+    for (var i = 1; i <= 42; i++) {
+      days.add(DateTime(month.year, month.month, i + 1 - firstDayOfWeek));
     }
+
     return days;
   }
 

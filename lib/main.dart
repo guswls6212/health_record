@@ -4,6 +4,7 @@ import 'src/app.dart';
 import 'src/settings/settings_controller.dart';
 import 'src/settings/settings_service.dart';
 import 'src/step_calendar.dart';
+import 'src/workout_list.dart';
 
 void main() async {
   // Set up the SettingsController, which will glue user settings to multiple
@@ -32,7 +33,8 @@ class CalendarCheck extends StatelessWidget {
         //   colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         //   useMaterial3: true,
         // ),
-        home: StepCalendar()
+        home: WorkoutList()
+        // StepCalendar()
 
         // BasicCalendar(),
         // ExpenseList(expenses: generateDummyExpenses())
