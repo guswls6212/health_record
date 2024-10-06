@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:health_record/src/workout_screen.dart';
 
 import 'src/app.dart';
 import 'src/settings/settings_controller.dart';
@@ -33,7 +34,8 @@ class CalendarCheck extends StatelessWidget {
         //   colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         //   useMaterial3: true,
         // ),
-        home: WorkoutList()
+        home: WorkoutScreen()
+        // WorkoutList()
         // StepCalendar()
 
         // BasicCalendar(),
