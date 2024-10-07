@@ -6,6 +6,8 @@ import 'src/settings/settings_controller.dart';
 import 'src/settings/settings_service.dart';
 import 'src/step_calendar.dart';
 import 'src/workout_list.dart';
+import 'src/workout_input.dart';
+import 'src/workout_input2.dart';
 
 void main() async {
   // Set up the SettingsController, which will glue user settings to multiple
@@ -29,20 +31,22 @@ class CalendarCheck extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        // title: 'Hada Accountbook!',
-        // theme: ThemeData(
-        //   colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        //   useMaterial3: true,
-        // ),
-        home: WorkoutScreen()
-        // WorkoutList()
-        // StepCalendar()
+      // title: 'Hada Accountbook!',
+      // theme: ThemeData(
+      //   colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      //   useMaterial3: true,
+      // ),
+      home: ExerciseSetScreen(),
+      // WorkoutRecordInput()
+      // WorkoutScreen()
+      // WorkoutList()
+      // StepCalendar()
 
-        // BasicCalendar(),
-        // ExpenseList(expenses: generateDummyExpenses())
-        // TransactionApp(),
-        // ExpenseInputScreen(),
-        // const MyHomePage(title: 'Hada Accountbook!'),
-        );
+      // BasicCalendar(),
+      // ExpenseList(expenses: generateDummyExpenses())
+      // TransactionApp(),
+      // ExpenseInputScreen(),
+      // const MyHomePage(title: 'Hada Accountbook!'),
+    );
   }
 }
