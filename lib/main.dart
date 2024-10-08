@@ -32,10 +32,10 @@ class CalendarCheck extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       // title: 'Hada Accountbook!',
-      // theme: ThemeData(
-      //   colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      //   useMaterial3: true,
-      // ),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+        useMaterial3: true,
+      ),
       home: ExerciseSetScreen(),
       // WorkoutRecordInput()
       // WorkoutScreen()
@@ -47,6 +47,45 @@ class CalendarCheck extends StatelessWidget {
       // TransactionApp(),
       // ExpenseInputScreen(),
       // const MyHomePage(title: 'Hada Accountbook!'),
+    );
+
+    // return MaterialApp(
+    //   title: '근력 운동 앱',
+    //   theme: ThemeData(
+    //     primaryColor: Colors.red, // 주요 색상 (예: 버튼, AppBar 등)
+    //     scaffoldBackgroundColor: Colors.black, // 배경 색상
+    //     textTheme: TextTheme(
+    //       bodyMedium: TextStyle(color: Colors.white), // 일반 텍스트 색상
+    //     ),
+    //     // ... 기타 테마 설정
+    //   ),
+    //   home: MyHomePage(),
+    // );
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('운동 기록'),
+      ),
+      body: ListView.builder(
+        itemCount: 5, // 임의의 아이템 개수
+        itemBuilder: (context, index) {
+          return ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.green, // 운동 종류 아이콘 배경색
+              child: Icon(Icons.fitness_center, color: Colors.white),
+            ),
+            title: Text('벤치프레스'),
+            subtitle: Text('3세트 x 10회'),
+            trailing: Text('2023-11-23'),
+            tileColor: Colors.blue[50], // 리스트 타일 배경색
+          );
+        },
+      ),
     );
   }
 }
