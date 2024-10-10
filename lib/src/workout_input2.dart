@@ -32,7 +32,7 @@ class _ExerciseSetScreenState extends State<ExerciseSetScreen> {
         Column(children: [
           IntrinsicHeight(
             child: Card(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               child: Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Column(
@@ -44,12 +44,16 @@ class _ExerciseSetScreenState extends State<ExerciseSetScreen> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Container(
+                            color: Theme.of(context).colorScheme.onSurface,
                             height: 64,
-                            child: const Padding(
+                            child: Padding(
                               padding: EdgeInsets.all(16.0),
                               child: Text(
                                 '1',
-                                style: TextStyle(fontSize: 16),
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                           ),
@@ -57,8 +61,10 @@ class _ExerciseSetScreenState extends State<ExerciseSetScreen> {
                               width: 64,
                               height: 40,
                               decoration: BoxDecoration(
-                                  color: Colors.grey,
-                                  border: Border.all(),
+                                  // color: Theme.of(context)
+                                  //     .colorScheme
+                                  //     .primaryContainer,
+                                  // border: Border.all(),
                                   borderRadius: BorderRadius.circular(10)),
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
@@ -68,7 +74,8 @@ class _ExerciseSetScreenState extends State<ExerciseSetScreen> {
                                     FilteringTextInputFormatter.digitsOnly
                                   ],
                                   decoration: InputDecoration(
-                                      border: InputBorder.none, hintText: '0'),
+                                      // border: InputBorder.none,
+                                      hintText: '0'),
                                 ),
                               )),
                           // Container(child: Text('KG')),

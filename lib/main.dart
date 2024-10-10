@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:health_record/src/workout_screen.dart';
+import 'package:provider/provider.dart';
 
 import 'src/app.dart';
 import 'src/settings/settings_controller.dart';
@@ -8,6 +9,7 @@ import 'src/step_calendar.dart';
 import 'src/workout_list.dart';
 import 'src/workout_input.dart';
 import 'src/workout_input2.dart';
+import 'src/exercise/exercise.dart';
 
 void main() async {
   // Set up the SettingsController, which will glue user settings to multiple
@@ -30,23 +32,27 @@ class CalendarCheck extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      // title: 'Hada Accountbook!',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
-        useMaterial3: true,
-      ),
-      home: ExerciseSetScreen(),
-      // WorkoutRecordInput()
-      // WorkoutScreen()
-      // WorkoutList()
-      // StepCalendar()
+    return ChangeNotifierProvider(
+      create: (context) => ExerciseModel(),
+      child: MaterialApp(
+        // title: 'Hada Accountbook!',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+          useMaterial3: true,
+        ),
+        home: ExerciseScreen(),
+        // ExerciseSetScreen(),
+        // WorkoutRecordInput()
+        // WorkoutScreen()
+        // WorkoutList()
+        // StepCalendar()
 
-      // BasicCalendar(),
-      // ExpenseList(expenses: generateDummyExpenses())
-      // TransactionApp(),
-      // ExpenseInputScreen(),
-      // const MyHomePage(title: 'Hada Accountbook!'),
+        // BasicCalendar(),
+        // ExpenseList(expenses: generateDummyExpenses())
+        // TransactionApp(),
+        // ExpenseInputScreen(),
+        // const MyHomePage(title: 'Hada Accountbook!'),
+      ),
     );
 
     // return MaterialApp(
