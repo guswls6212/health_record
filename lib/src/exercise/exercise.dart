@@ -31,6 +31,7 @@ class ExerciseModel extends ChangeNotifier {
   Future<void> loadExercises() async {
     final prefs = await SharedPreferences.getInstance();
     final encodedData = prefs.getString('exercises');
+    print(encodedData);
     if (encodedData != null) {
       final List<dynamic> decodedData = jsonDecode(encodedData);
       _exercises = decodedData.map((item) => Exercise.fromJson(item)).toList();
@@ -40,8 +41,11 @@ class ExerciseModel extends ChangeNotifier {
 
   Future<void> saveExercises() async {
     final prefs = await SharedPreferences.getInstance();
-    // final encodedData =Exercise.toJson(_exercises[0]);
-    final encodedData = jsonEncode(_exercises[0]);
+    final encodedData = jsonEncode({'exercise': _exercises},
+        toEncodable: (Object? value) => value is Exercise
+            ? Exercise.toJson(value)
+            : throw UnsupportedError('Cannot convert to JSON:$value'));
+    // final encodedData = jsonEncode(_exercises);
     await prefs.setString('exercises', encodedData);
   }
 
@@ -58,7 +62,19 @@ class ExerciseModel extends ChangeNotifier {
   }
 }
 
-class ExerciseScreen extends StatelessWidget {
+class ExerciseScreen extends StatefulWidget {
+  @override
+  State<ExerciseScreen> createState() => _ExerciseScreenState();
+}
+
+class _ExerciseScreenState extends State<ExerciseScreen> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    ExerciseModel().loadExercises();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
