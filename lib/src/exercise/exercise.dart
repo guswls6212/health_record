@@ -24,6 +24,12 @@ class Exercise {
 }
 
 class ExerciseModel extends ChangeNotifier {
+  //싱글톤 처리
+  static final ExerciseModel _instance = ExerciseModel._internal();
+  factory ExerciseModel() => _instance;
+  ExerciseModel._internal();
+  //싱글톤 처리
+
   List<Exercise> _exercises = [];
 
   List<Exercise> get exercises => _exercises;
@@ -33,7 +39,8 @@ class ExerciseModel extends ChangeNotifier {
     final encodedData = prefs.getString('exercises');
     print(encodedData);
     if (encodedData != null) {
-      final List<dynamic> decodedData = jsonDecode(encodedData);
+      final Map<String, dynamic> exerciseJson = jsonDecode(encodedData);
+      final List<dynamic> decodedData = exerciseJson['exercise'];
       _exercises = decodedData.map((item) => Exercise.fromJson(item)).toList();
       notifyListeners();
     }
@@ -71,47 +78,50 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
   @override
   void initState() {
     // TODO: implement initState
-    super.initState();
     ExerciseModel().loadExercises();
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('운동 목록')),
-      body: Consumer<ExerciseModel>(
-        builder: (context, exerciseModel, child) {
-          return Column(
-            children: [
-              TextField(
-                onChanged: (value) {
-                  // 검색 기능 구현 (생략)
-                },
-                decoration: InputDecoration(hintText: '운동 검색'),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: exerciseModel.exercises.length,
-                  itemBuilder: (context, index) {
-                    final exercise = exerciseModel.exercises[index];
-                    return Dismissible(
-                      key: Key(exercise.event),
-                      onDismissed: (direction) {
-                        exerciseModel.removeExercise(exercise);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('${exercise.event} 삭제됨')),
-                        );
-                      },
-                      child: ListTile(
-                        title: Text('${exercise.part}: ${exercise.event}'),
-                      ),
-                    );
+      body: ChangeNotifierProvider(
+        create: (context) => ExerciseModel(),
+        child: Consumer<ExerciseModel>(
+          builder: (context, exerciseModel, child) {
+            return Column(
+              children: [
+                TextField(
+                  onChanged: (value) {
+                    // 검색 기능 구현 (생략)
                   },
+                  decoration: InputDecoration(hintText: '운동 검색'),
                 ),
-              ),
-            ],
-          );
-        },
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: exerciseModel.exercises.length,
+                    itemBuilder: (context, index) {
+                      final exercise = exerciseModel.exercises[index];
+                      return Dismissible(
+                        key: Key(exercise.event),
+                        onDismissed: (direction) {
+                          exerciseModel.removeExercise(exercise);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('${exercise.event} 삭제됨')),
+                          );
+                        },
+                        child: ListTile(
+                          title: Text('${exercise.part}: ${exercise.event}'),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
