@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:json_annotation/json_annotation.dart';
+import './edit_part_screen.dart';
 
 @JsonSerializable()
 class Exercise {
@@ -67,6 +68,16 @@ class ExerciseModel extends ChangeNotifier {
     notifyListeners();
     saveExercises();
   }
+
+  Future<void> updateExercise(int index, Exercise updatedExercise) async {
+    if (index >= 0 && index < _exercises.length) {
+      _exercises[index] = updatedExercise;
+      notifyListeners();
+      await saveExercises();
+    } else {
+      print('Error: Index out of bounds for exercise update');
+    }
+  }
 }
 
 class ExerciseScreen extends StatefulWidget {
@@ -104,17 +115,29 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                     itemBuilder: (context, index) {
                       final exercise = exerciseModel.exercises[index];
                       return Dismissible(
-                        key: Key(exercise.event),
-                        onDismissed: (direction) {
-                          exerciseModel.removeExercise(exercise);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('${exercise.event} 삭제됨')),
-                          );
-                        },
-                        child: ListTile(
-                          title: Text('${exercise.part}: ${exercise.event}'),
-                        ),
-                      );
+                          key: Key(exercise.event),
+                          onDismissed: (direction) {
+                            exerciseModel.removeExercise(exercise);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('${exercise.event} 삭제됨')),
+                            );
+                          },
+                          child: ListTile(
+                            title: Text('${exercise.part}: ${exercise.event}'),
+                            trailing: IconButton(
+                                icon: Icon(Icons.edit),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EditExerciseScreen(
+                                        exercise: exercise,
+                                        index: index,
+                                      ),
+                                    ),
+                                  );
+                                }),
+                          ));
                     },
                   ),
                 ),
