@@ -9,14 +9,14 @@ import './edit_part_screen.dart';
 @JsonSerializable()
 class Exercise {
   final String part;
-  final String event;
+  final List<String> event;
 
   Exercise({required this.part, required this.event});
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
     return Exercise(
-      part: json['part'] as String, // null 체크 및 타입 변환 추가
-      event: json['event'] as String,
+      part: json['part'] as String,
+      event: (json['event'] as List<dynamic>).cast<String>(),
     );
   }
 
@@ -115,29 +115,48 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                     itemBuilder: (context, index) {
                       final exercise = exerciseModel.exercises[index];
                       return Dismissible(
-                          key: Key(exercise.event),
-                          onDismissed: (direction) {
-                            exerciseModel.removeExercise(exercise);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('${exercise.event} 삭제됨')),
-                            );
-                          },
-                          child: ListTile(
-                            title: Text('${exercise.part}: ${exercise.event}'),
-                            trailing: IconButton(
-                                icon: Icon(Icons.edit),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => EditExerciseScreen(
-                                        exercise: exercise,
-                                        index: index,
+                        key: Key(exercise.part), // Use part for parent key
+                        onDismissed: (direction) {
+                          exerciseModel.removeExercise(exercise);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('${exercise.part} 삭제됨')),
+                          );
+                        },
+                        child: ListTile(
+                          title: Text('${exercise.part}'),
+                          subtitle: exercise.event.isEmpty
+                              ? null
+                              : ListView.builder(
+                                  physics:
+                                      NeverScrollableScrollPhysics(), // Disable scrolling
+                                  shrinkWrap:
+                                      true, // Prevent nested list from expanding
+                                  itemCount: exercise.event.length,
+                                  itemBuilder: (context, eventIndex) {
+                                    final event = exercise.event[eventIndex];
+                                    return ListTile(
+                                      title: Text(event),
+                                      trailing: IconButton(
+                                        icon: Icon(Icons.edit),
+                                        onPressed: () {
+                                          // Handle edit event functionality (implement later)
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  EditExerciseScreen(
+                                                exercise: exercise,
+                                                index: index,
+                                              ),
+                                            ),
+                                          );
+                                        },
                                       ),
-                                    ),
-                                  );
-                                }),
-                          ));
+                                    );
+                                  },
+                                ),
+                        ),
+                      );
                     },
                   ),
                 ),
@@ -173,6 +192,7 @@ class AddExerciseScreen extends StatefulWidget {
 
 class _AddExerciseScreenState extends State<AddExerciseScreen> {
   final TextEditingController _eventController = TextEditingController();
+  final List<String> _newEvents = [];
 
   @override
   Widget build(BuildContext context) {
@@ -186,11 +206,35 @@ class _AddExerciseScreenState extends State<AddExerciseScreen> {
             TextField(
               controller: _eventController,
               decoration: InputDecoration(hintText: '운동 종류 입력'),
+              onSubmitted: (value) {
+                setState(() {
+                  _newEvents.add(value);
+                  _eventController.clear();
+                });
+              },
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _newEvents.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(_newEvents[index]),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () {
+                        setState(() {
+                          _newEvents.removeAt(index);
+                        });
+                      },
+                    ),
+                  );
+                },
+              ),
             ),
             ElevatedButton(
               onPressed: () {
                 final newExercise =
-                    Exercise(part: widget.part, event: _eventController.text);
+                    Exercise(part: widget.part, event: _newEvents);
                 Provider.of<ExerciseModel>(context, listen: false)
                     .addExercise(newExercise);
                 Navigator.pop(context);

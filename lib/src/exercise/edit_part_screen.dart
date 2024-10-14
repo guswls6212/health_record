@@ -16,11 +16,27 @@ class EditExerciseScreen extends StatefulWidget {
 
 class _EditExerciseScreenState extends State<EditExerciseScreen> {
   TextEditingController _eventController = TextEditingController();
+  List<String> _eventList = [];
 
   @override
   void initState() {
     super.initState();
-    _eventController.text = widget.exercise.event;
+    _eventController.text = widget.exercise.event.join(', ');
+    _eventList = List.from(widget.exercise.event);
+  }
+
+  void _addToList() {
+    final newEvent = _eventController.text.trim();
+    if (newEvent.isNotEmpty && !_eventList.contains(newEvent)) {
+      _eventList.add(newEvent);
+      _eventController.clear();
+    }
+  }
+
+  void _removeFromList(int index) {
+    setState(() {
+      _eventList.removeAt(index);
+    });
   }
 
   @override
@@ -36,14 +52,31 @@ class _EditExerciseScreenState extends State<EditExerciseScreen> {
             Text(widget.exercise.part),
             TextField(
               controller: _eventController,
-              decoration: InputDecoration(
-                  labelText: '운동 부위', hintText: _eventController.text),
+              decoration:
+                  InputDecoration(labelText: '운동 부위', hintText: '운동을 입력하세요'),
+            ),
+            ElevatedButton(
+              onPressed: _addToList,
+              child: Text('추가'),
+            ),
+            ListView.builder(
+              shrinkWrap: true,
+              itemCount: _eventList.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_eventList[index]),
+                  trailing: IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () => _removeFromList(index),
+                  ),
+                );
+              },
             ),
             ElevatedButton(
               onPressed: () {
                 final updatedExercise = Exercise(
                   part: widget.exercise.part,
-                  event: _eventController.text,
+                  event: _eventList,
                 );
                 Provider.of<ExerciseModel>(context, listen: false)
                     .updateExercise(widget.index, updatedExercise);
