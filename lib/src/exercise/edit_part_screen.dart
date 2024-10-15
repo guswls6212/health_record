@@ -15,20 +15,23 @@ class EditExerciseScreen extends StatefulWidget {
 }
 
 class _EditExerciseScreenState extends State<EditExerciseScreen> {
+  TextEditingController _partController = TextEditingController();
   TextEditingController _eventController = TextEditingController();
   List<String> _eventList = [];
 
   @override
   void initState() {
     super.initState();
-    _eventController.text = widget.exercise.event.join(', ');
+    // _eventController.text = widget.exercise.event.join(', ');
     _eventList = List.from(widget.exercise.event);
   }
 
   void _addToList() {
     final newEvent = _eventController.text.trim();
     if (newEvent.isNotEmpty && !_eventList.contains(newEvent)) {
-      _eventList.add(newEvent);
+      setState(() {
+        _eventList.add(newEvent);
+      });
       _eventController.clear();
     }
   }

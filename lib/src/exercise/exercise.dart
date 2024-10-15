@@ -136,25 +136,24 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                                     final event = exercise.event[eventIndex];
                                     return ListTile(
                                       title: Text(event),
-                                      trailing: IconButton(
-                                        icon: Icon(Icons.edit),
-                                        onPressed: () {
-                                          // Handle edit event functionality (implement later)
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  EditExerciseScreen(
-                                                exercise: exercise,
-                                                index: index,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
                                     );
                                   },
                                 ),
+                          trailing: IconButton(
+                            icon: Icon(Icons.edit),
+                            onPressed: () {
+                              // Handle edit event functionality (implement later)
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AddExerciseScreen(
+                                    exercise: exercise,
+                                    index: index,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       );
                     },
@@ -170,7 +169,10 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AddExerciseScreen(part: 'chest'),
+              builder: (context) => AddExerciseScreen(
+                exercise: null,
+                index: null,
+              ),
             ),
           );
         },
@@ -182,17 +184,33 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
 
 // ... (AddExerciseScreen 코드는 이전과 동일)
 class AddExerciseScreen extends StatefulWidget {
-  final String part;
+  final Exercise? exercise;
+  final int? index;
 
-  const AddExerciseScreen({Key? key, required this.part}) : super(key: key);
+  const AddExerciseScreen(
+      {Key? key, required this.exercise, required this.index})
+      : super(key: key);
 
   @override
   _AddExerciseScreenState createState() => _AddExerciseScreenState();
 }
 
 class _AddExerciseScreenState extends State<AddExerciseScreen> {
+  final TextEditingController _partController = TextEditingController();
   final TextEditingController _eventController = TextEditingController();
   final List<String> _newEvents = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // exercise와 index가 null이 아니면 수정 화면 초기화
+    if (widget.exercise != null && widget.index != null) {
+      _partController.text =
+          widget.exercise!.part; // 예시: exercise의 part 값으로 초기화
+      _newEvents.addAll(widget.exercise!.event); // 기존 리스트에 새로운 요소 추가
+      // ... 다른 필드 초기화
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -202,16 +220,37 @@ class _AddExerciseScreenState extends State<AddExerciseScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text('파트: ${widget.part}'),
+            TextField(
+              controller: _partController,
+              decoration: InputDecoration(hintText: '파트 종류 입력'),
+            ),
             TextField(
               controller: _eventController,
               decoration: InputDecoration(hintText: '운동 종류 입력'),
               onSubmitted: (value) {
                 setState(() {
-                  _newEvents.add(value);
+                  addEvent();
+                });
+              },
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  addEvent();
                   _eventController.clear();
                 });
               },
+              child: Text('운동 추가'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final newExercise =
+                    Exercise(part: _partController.text, event: _newEvents);
+                Provider.of<ExerciseModel>(context, listen: false)
+                    .addExercise(newExercise);
+                Navigator.pop(context);
+              },
+              child: Text('추가 완료'),
             ),
             Expanded(
               child: ListView.builder(
@@ -231,19 +270,16 @@ class _AddExerciseScreenState extends State<AddExerciseScreen> {
                 },
               ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                final newExercise =
-                    Exercise(part: widget.part, event: _newEvents);
-                Provider.of<ExerciseModel>(context, listen: false)
-                    .addExercise(newExercise);
-                Navigator.pop(context);
-              },
-              child: Text('추가'),
-            ),
           ],
         ),
       ),
     );
+  }
+
+  void addEvent() {
+    setState(() {
+      _newEvents.add(_eventController.text);
+    });
+    _eventController.clear();
   }
 }
