@@ -82,7 +82,7 @@ class _EditExerciseScreenState extends State<EditExerciseScreen> {
                   event: _eventList,
                 );
                 Provider.of<ExerciseModel>(context, listen: false)
-                    .updateExercise(widget.index, updatedExercise);
+                    .updateExercise(updatedExercise);
                 Navigator.pop(context);
               },
               child: Text('수정'),

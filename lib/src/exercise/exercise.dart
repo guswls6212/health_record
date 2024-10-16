@@ -6,12 +6,28 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:json_annotation/json_annotation.dart';
 import './edit_part_screen.dart';
 
+import 'package:uuid/uuid.dart';
+
 @JsonSerializable()
 class Exercise {
+  final String id;
   final String part;
   final List<String> event;
 
-  Exercise({required this.part, required this.event});
+  Exercise({String? id, required this.part, required this.event})
+      : id = id ?? const Uuid().v4();
+
+  Exercise copyWith({
+    String? id,
+    String? part,
+    List<String>? event,
+  }) {
+    return Exercise(
+      id: id ?? this.id,
+      part: part ?? this.part,
+      event: event ?? this.event,
+    );
+  }
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
     return Exercise(
@@ -32,8 +48,15 @@ class ExerciseModel extends ChangeNotifier {
   //싱글톤 처리
 
   List<Exercise> _exercises = [];
-
   List<Exercise> get exercises => _exercises;
+
+  Exercise getExerciseById(String id) {
+    final exercise = _exercises.firstWhere((exercise) => exercise.id == id);
+    if (exercise == null) {
+      throw Exception('Exercise with ID $id not found');
+    }
+    return exercise;
+  }
 
   Future<void> loadExercises() async {
     final prefs = await SharedPreferences.getInstance();
@@ -64,18 +87,22 @@ class ExerciseModel extends ChangeNotifier {
   }
 
   void removeExercise(Exercise exercise) {
-    _exercises.remove(exercise);
+    _exercises.removeWhere((item) => item.id == exercise.id);
     notifyListeners();
     saveExercises();
   }
 
-  Future<void> updateExercise(int index, Exercise updatedExercise) async {
-    if (index >= 0 && index < _exercises.length) {
+  Future<void> updateExercise(Exercise updatedExercise) async {
+    final index =
+        _exercises.indexWhere((item) => item.id == updatedExercise.id);
+    print('index:$index');
+    print(updatedExercise.toString());
+    if (index != -1) {
       _exercises[index] = updatedExercise;
-      notifyListeners();
-      await saveExercises();
+      notifyListeners(); // 상태 변경 알림
+      saveExercises(); // 변경 사항 저장
     } else {
-      print('Error: Index out of bounds for exercise update');
+      print('해당하는 운동을 찾을 수 없습니다.');
     }
   }
 }
@@ -115,7 +142,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                     itemBuilder: (context, index) {
                       final exercise = exerciseModel.exercises[index];
                       return Dismissible(
-                        key: Key(exercise.part), // Use part for parent key
+                        key: Key(exercise.id), // Use part for parent key
                         onDismissed: (direction) {
                           exerciseModel.removeExercise(exercise);
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -146,10 +173,8 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => AddExerciseScreen(
-                                    exercise: exercise,
-                                    index: index,
-                                  ),
+                                  builder: (context) =>
+                                      AddExerciseScreen(exercise: exercise),
                                 ),
                               );
                             },
@@ -171,7 +196,6 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
             MaterialPageRoute(
               builder: (context) => AddExerciseScreen(
                 exercise: null,
-                index: null,
               ),
             ),
           );
@@ -185,11 +209,8 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
 // ... (AddExerciseScreen 코드는 이전과 동일)
 class AddExerciseScreen extends StatefulWidget {
   final Exercise? exercise;
-  final int? index;
 
-  const AddExerciseScreen(
-      {Key? key, required this.exercise, required this.index})
-      : super(key: key);
+  const AddExerciseScreen({Key? key, required this.exercise}) : super(key: key);
 
   @override
   _AddExerciseScreenState createState() => _AddExerciseScreenState();
@@ -204,11 +225,18 @@ class _AddExerciseScreenState extends State<AddExerciseScreen> {
   void initState() {
     super.initState();
     // exercise와 index가 null이 아니면 수정 화면 초기화
-    if (widget.exercise != null && widget.index != null) {
-      _partController.text =
-          widget.exercise!.part; // 예시: exercise의 part 값으로 초기화
-      _newEvents.addAll(widget.exercise!.event); // 기존 리스트에 새로운 요소 추가
-      // ... 다른 필드 초기화
+    if (widget.exercise != null) {
+      // ExerciseModel 에서 ID 를 이용하여 해당 Exercise 객체 불러오기
+      try {
+        final exercise = Provider.of<ExerciseModel>(context, listen: false)
+            .getExerciseById(widget.exercise!.id);
+        _partController.text = exercise.part; // 예시: exercise의 part 값으로 초기화
+        _newEvents.addAll(exercise.event); // 기존 리스트에 새로운 요소 추가
+        // ... 다른 필드 초기화
+      } catch (e) {
+        print('Error: Exercise not found');
+        // 적절한 처리 (예: 사용자에게 알림, 화면 전환 등)
+      }
     }
   }
 
@@ -244,10 +272,27 @@ class _AddExerciseScreenState extends State<AddExerciseScreen> {
             ),
             ElevatedButton(
               onPressed: () {
-                final newExercise =
-                    Exercise(part: _partController.text, event: _newEvents);
-                Provider.of<ExerciseModel>(context, listen: false)
-                    .addExercise(newExercise);
+                final newExercise;
+
+                if (widget.exercise != null) {
+                  Exercise newExercise =
+                      Provider.of<ExerciseModel>(context, listen: false)
+                          .getExerciseById(widget.exercise!.id);
+
+                  // 기존 객체의 값을 유지하면서 part와 event만 업데이트
+                  newExercise = newExercise.copyWith(
+                      id: newExercise.id,
+                      part: _partController.text,
+                      event: _newEvents);
+
+                  Provider.of<ExerciseModel>(context, listen: false)
+                      .updateExercise(newExercise);
+                } else {
+                  newExercise =
+                      Exercise(part: _partController.text, event: _newEvents);
+                  Provider.of<ExerciseModel>(context, listen: false)
+                      .addExercise(newExercise);
+                }
                 Navigator.pop(context);
               },
               child: Text('추가 완료'),
