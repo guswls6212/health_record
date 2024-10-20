@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // 날짜 포맷팅을 위한 패키지
+import 'package:provider/provider.dart';
+import 'package:table_calendar/table_calendar.dart';
+import 'workout_record.dart';
 
 class StepCalendar extends StatefulWidget {
   @override
@@ -7,113 +9,62 @@ class StepCalendar extends StatefulWidget {
 }
 
 class _StepCalendarState extends State<StepCalendar> {
-  DateTime _selectedDate = DateTime.now();
-
-  List<DateTime> getDaysInMonth(DateTime month) {
-    // 해당 월의 첫째 날 요일 구하기 (월요일: 1, 일요일: 7)
-    var firstDayOfMonth = DateTime(month.year, month.month, 1);
-    var firstDayOfWeek = firstDayOfMonth.weekday;
-
-    // 해당 월의 마지막 날 구하기
-    var lastDayOfMonth = DateTime(month.year, month.month + 1, 0);
-    var numberOfDaysInMonth = lastDayOfMonth.day;
-    print('''
-    firstDayOfMonth: ${firstDayOfMonth}
-    firstDayOfWeek: ${firstDayOfWeek}
-    lastDayOfMonth: ${lastDayOfMonth}
-    numberOfDaysInMonth: ${numberOfDaysInMonth}
-    datetime: ${DateTime(month.year, month.month, -1)}
-    ''');
-    // 날짜와 요일 정보를 포함하는 리스트 생성
-    List<DateTime> days = [];
-    // monday start(월요일: 1, 일요일: 7)
-    // 6줄버전
-    for (var i = 1; i <= 42; i++) {
-      days.add(DateTime(month.year, month.month, i + 1 - firstDayOfWeek));
-    }
-
-    return days;
-  }
+  CalendarFormat _calendarFormat = CalendarFormat.month;
+  DateTime _focusedDay = DateTime.now();
+  DateTime? _selectedDay;
 
   @override
   Widget build(BuildContext context) {
+    final workoutRecordModel = Provider.of<WorkoutRecordModel>(context);
+
     return Scaffold(
       appBar: AppBar(title: const Text('StepCalendar')),
-      body: Column(
-        children: [
-          // 년월 표시 행
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: Icon(Icons.chevron_left),
-                onPressed: () {
-                  setState(() {
-                    _selectedDate = DateTime(
-                        _selectedDate.year, _selectedDate.month - 1, 1);
-
-                    _buildDays();
-                  });
-                },
-              ),
-              Text(DateFormat('yyyy년 MM월').format(_selectedDate)),
-              IconButton(
-                icon: Icon(Icons.chevron_right),
-                onPressed: () {
-                  setState(() {
-                    _selectedDate = DateTime(
-                        _selectedDate.year, _selectedDate.month + 1, 1);
-                    _buildDays();
-                  });
-                },
-              ),
-            ],
-          ),
-          // 요일 표시 행
-          Row(
-            children: [
-              for (var day in ['월', '화', '수', '목', '금', '토', '일'])
-                Expanded(
-                  child: Container(
-                    alignment: Alignment.center,
-                    color: Colors.grey[200],
-                    child: Text(day),
-                  ),
+      body: TableCalendar(
+        firstDay: DateTime.utc(2010, 10, 16),
+        lastDay: DateTime.utc(2030, 3, 14),
+        focusedDay: _focusedDay,
+        calendarFormat: _calendarFormat,
+        selectedDayPredicate: (day) {
+          return isSameDay(_selectedDay, day);
+        },
+        onDaySelected: (selectedDay, focusedDay) {
+          if (!isSameDay(_selectedDay, selectedDay)) {
+            setState(() {
+              _selectedDay = selectedDay;
+              _focusedDay = focusedDay;
+            });
+          }
+        },
+        onFormatChanged: (format) {
+          if (_calendarFormat != format) {
+            setState(() {
+              _calendarFormat = format;
+            });
+          }
+        },
+        onPageChanged: (focusedDay) {
+          _focusedDay = focusedDay;
+        },
+        eventLoader: (day) {
+          return workoutRecordModel.getWorkoutRecordsByDate(day);
+        },
+        calendarBuilders: CalendarBuilders(
+          markerBuilder: (context, day, events) {
+            if (events.isNotEmpty) {
+              return Container(
+                margin: const EdgeInsets.all(4.0),
+                decoration: const BoxDecoration(
+                  color: Colors.blue,
+                  shape: BoxShape.circle,
                 ),
-            ],
-          ),
-          // 날짜 표시 GridView
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 7,
-              children: _buildDays(),
-            ),
-          ),
-        ],
+                width: 6,
+                height: 6,
+              );
+            }
+            return null;
+          },
+        ),
       ),
     );
-  }
-
-  List<GestureDetector> _buildDays() {
-    print(_selectedDate);
-    List<DateTime> days = getDaysInMonth(_selectedDate); // 선택된 날짜 기준으로 달력 생성
-
-    return days.map((day) {
-      return GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedDate = day;
-          });
-        },
-        child: Container(
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: _selectedDate == day ? Colors.blue : Colors.white,
-            border: Border.all(color: Colors.grey),
-          ),
-          child: Text('${day.day}'),
-        ),
-      );
-    }).toList();
   }
 }
