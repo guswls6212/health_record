@@ -1,0 +1,8 @@
+{
+  "hello": "こんにちは",
+  "settings": "設定",
+  "language": "言語",
+  "currentLanguage": "現在の言語: {language}",
+  "apply": "適用",
+  "date":"yyyy年 MM月 dd日"
+}

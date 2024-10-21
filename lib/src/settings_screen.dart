@@ -5,70 +5,57 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'dart:io';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  final AppLocalizations appLocalizations;
+  final Function(Locale) setLocale;
+
+  SettingsScreen({required this.appLocalizations, required this.setLocale});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  Locale _locale = Locale(Platform.localeName.split('_')[0]);
-
+  late AppLocalizations _appLocalizations;
   @override
-  void initState() {
-    super.initState();
-    _loadLocale();
-  }
-
-  _loadLocale() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String languageCode =
-        prefs.getString('languageCode') ?? _locale.languageCode;
-    setState(() {
-      _locale = Locale(languageCode);
-    });
-  }
-
-  _setLocale(Locale locale) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('languageCode', locale.languageCode);
-    setState(() {
-      _locale = locale;
-    });
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    _appLocalizations = AppLocalizations.of(context)!;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // title: Text(AppLocalizations.of(context)!.settings),
-        title: Text('setting'),
+        title: Text(_appLocalizations.settings),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Text(AppLocalizations.of(context)!
-            //     .currentLanguage(AppLocalizations.of(context)!.localeName)),
-            Text('localeName'),
+            Text(_appLocalizations
+                .currentLanguage(_appLocalizations.localeName)),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                _setLocale(const Locale('ko', 'KR'));
+                widget.setLocale(Locale('ko', 'KR'));
+                setState(() {}); // setState 호출 추가
               },
-              child: const Text('한국어'),
+              child: Text('한국어'),
             ),
             ElevatedButton(
               onPressed: () {
-                _setLocale(const Locale('en', 'US'));
+                widget.setLocale(Locale('en', 'US'));
+                setState(() {}); // setState 호출 추가
               },
-              child: const Text('English'),
+              child: Text('English'),
             ),
             ElevatedButton(
               onPressed: () {
-                _setLocale(const Locale('ja', 'JP'));
+                widget.setLocale(Locale('ja', 'JP'));
+                setState(() {}); // setState 호출 추가
               },
-              child: const Text('日本語'),
+              child: Text('日本語'),
             ),
           ],
         ),
