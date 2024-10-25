@@ -12,6 +12,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  sqflite: ^2.0.2+1
+  collection: ^1.17.1
   flutter_localizations:
     sdk: flutter
   json_annotation: 4.9.0
