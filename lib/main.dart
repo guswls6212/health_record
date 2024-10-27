@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'src/exercise/exercise.dart';
-import 'src/home_screen.dart';
-import 'src/step_calendar.dart';
-import 'src/workout_record.dart';
-import 'src/settings_screen.dart';
-import 'src/add_workout_record_screen.dart';
-import 'src/exercise_screen.dart';
+import 'src/model/exercise.dart';
+import 'src/screen/home_screen.dart';
+import 'src/screen/step_calendar_screen.dart';
+import 'src/model/workout_record.dart';
+import 'src/screen/settings_screen.dart';
+import 'src/screen/add_workout_record_screen.dart';
+import 'src/screen/add_update_part_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
@@ -106,12 +106,17 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  late List<Widget> _widgetOptions; // _widgetOptions 리스트 선언
 
-  final List<Widget> _widgetOptions = <Widget>[
-    HomeScreen(),
-    StepCalendar(),
-    ExerciseScreen(),
-  ];
+  // final List<Widget> _widgetOptions = <Widget>[
+  //   Builder(
+  //       builder: (context) => HomeScreen(
+  //             appLocalizations: AppLocalizations.of(context)!,
+  //             setLocale: widget.setLocale,
+  //           )),
+  //   // StepCalendar(appLocalizations: AppLocalizations.of(context)!), // AppLocalizations 전달
+  //   // ExerciseScreen(appLocalizations: AppLocalizations.of(context)!),
+  // ];
 
   @override
   void initState() {
@@ -121,46 +126,27 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Center(
-            child: Text(DateFormat(widget.appLocalizations.date,
-                    widget.appLocalizations.localeName)
-                .format(DateTime.now()))),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => SettingsScreen(
-                          appLocalizations: widget.appLocalizations,
-                          setLocale: (locale) {
-                            widget.setLocale(locale);
-                            // setState(() {});
-                          },
-                        )),
-              );
-            },
-          ),
-        ],
+    _widgetOptions = <Widget>[
+      // Builder(
+      // builder: (context) =>
+      HomeScreen(
+        appLocalizations: AppLocalizations.of(context)!,
+        setLocale: widget.setLocale,
       ),
+      // ),
+      StepCalendar(
+        appLocalizations: AppLocalizations.of(context)!,
+        setLocale: widget.setLocale,
+      ), // AppLocalizations 전달
+      ExerciseScreen(
+        appLocalizations: AppLocalizations.of(context)!,
+        setLocale: widget.setLocale,
+      ),
+    ];
+    return Scaffold(
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
-      floatingActionButton: _selectedIndex == 0
-          ? FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => AddWorkoutRecordScreen()),
-                );
-              },
-              child: Icon(Icons.add),
-            )
-          : null,
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(

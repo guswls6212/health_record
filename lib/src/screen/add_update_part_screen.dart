@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'exercise/exercise.dart';
+import '../model/exercise.dart';
 import 'package:uuid/uuid.dart';
+import 'add_update_workout_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ExerciseScreen extends StatefulWidget {
-  const ExerciseScreen({Key? key}) : super(key: key);
+  final AppLocalizations appLocalizations; // AppLocalizations 변수 추가
+  final Function(Locale) setLocale;
+  const ExerciseScreen(
+      {Key? key, required this.appLocalizations, required this.setLocale})
+      : super(key: key);
 
   @override
   _ExerciseScreenState createState() => _ExerciseScreenState();
@@ -157,7 +163,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
       builder: (context, exerciseModel, child) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('운동 종류'),
+            title: Text(widget.appLocalizations.type),
           ),
           body: ListView.builder(
             itemCount: exerciseModel.exercises.length,
@@ -185,7 +191,16 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
             },
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: _showAddExerciseDialog,
+            onPressed: () {
+              // AddWorkoutScreen으로 이동
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddWorkoutScreen(),
+                ),
+              );
+            },
+            // _showAddExerciseDialog,
             child: const Icon(Icons.add),
           ),
         );

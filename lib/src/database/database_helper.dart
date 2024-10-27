@@ -1,8 +1,8 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import '../exercise/exercise.dart';
-import '../workout_record.dart';
-import '../user/user.dart';
+import '../model/exercise.dart';
+import '../model/workout_record.dart';
+import '../model/user.dart';
 
 class DatabaseHelper {
   static final _databaseName = "health_app.db";

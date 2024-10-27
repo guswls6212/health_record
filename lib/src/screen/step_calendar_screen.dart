@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'workout_record.dart';
+import '../model/workout_record.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class StepCalendar extends StatefulWidget {
+  final AppLocalizations appLocalizations; // AppLocalizations 변수 추가
+  final Function(Locale) setLocale;
+  StepCalendar(
+      {Key? key, required this.appLocalizations, required this.setLocale})
+      : super(key: key);
   @override
   _StepCalendarState createState() => _StepCalendarState();
 }

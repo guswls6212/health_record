@@ -1,9 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:uuid/uuid.dart';
-import 'exercise/exercise.dart';
-import './database/database_helper.dart'; // DatabaseHelper import
-import './database/dao/workout_record_dao.dart';
+import '../database/database_helper.dart'; // DatabaseHelper import
+import '../database/dao/workout_record_dao.dart';
 
 class WorkoutRecord {
   final String id;

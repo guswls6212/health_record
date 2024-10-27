@@ -4,5 +4,6 @@
   "language": "Language",
   "currentLanguage": "Current Language: {language}",
   "apply": "Apply",
-  "date":"yyyy-MM-dd"
+  "date":"yyyy-MM-dd",
+  "type":"type"
 }

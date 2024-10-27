@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-import 'workout_record.dart';
-import 'exercise/exercise.dart';
+import '../model/workout_record.dart';
+import '../model/exercise.dart';
 
 class AddWorkoutRecordScreen extends StatefulWidget {
   const AddWorkoutRecordScreen({Key? key}) : super(key: key);

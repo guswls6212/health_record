@@ -1,5 +1,4 @@
-import '../../exercise/exercise.dart';
-import 'package:sqflite/sqflite.dart';
+import '../../model/exercise.dart';
 import '../database_helper.dart';
 
 class ExerciseDao {
