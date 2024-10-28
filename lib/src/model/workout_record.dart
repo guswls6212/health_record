@@ -1,43 +1,49 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import '../database/database_helper.dart'; // DatabaseHelper import
+import '../database/database_helper.dart';
 import '../database/dao/workout_record_dao.dart';
+import 'exercise.dart';
+import 'workout_set.dart'; // WorkoutSet import 추가
 
 class WorkoutRecord {
   final String id;
-  final String exerciseId;
+  final Exercise exercise;
   final DateTime date;
-  final List<Map<String, dynamic>> sets;
+  final List<WorkoutSet> sets; // WorkoutSet 객체 리스트로 변경
   int? syncStatus;
 
   WorkoutRecord({
     required this.id,
-    required this.exerciseId,
+    required this.exercise,
     required this.date,
     required this.sets,
     this.syncStatus,
   });
 
   factory WorkoutRecord.fromMap(Map<String, dynamic> map) {
+    // map['sets']는 List<WorkoutSet>으로 변환되어야 함
+    final sets = (map['sets'] as List<dynamic>)
+        .map((set) => WorkoutSet.fromMap(set as Map<String, dynamic>))
+        .toList();
+
     return WorkoutRecord(
-      id: map[DatabaseHelper.columnId] as String, // DB 컬럼명으로 변경
-      exerciseId: map[DatabaseHelper.columnExerciseId] as String, // DB 컬럼명으로 변경
-      date: DateTime.parse(
-          map[DatabaseHelper.columnDate] as String), // DB 컬럼명으로 변경
-      sets: (jsonDecode(map[DatabaseHelper.columnSets] as String)
-              as List<dynamic>)
-          .map((set) => set as Map<String, dynamic>)
-          .toList(),
+      id: map[DatabaseHelper.columnId] as String,
+      exercise: Exercise.fromMap(
+          map[DatabaseHelper.columnExerciseId] as Map<String, dynamic>),
+      date: DateTime.parse(map[DatabaseHelper.columnDate] as String),
+      sets: sets, // 변환된 sets 사용
       syncStatus: map[DatabaseHelper.columnSyncStatus] as int?,
     );
   }
 
   Map<String, dynamic> toMap() {
+    // sets를 Map<String, dynamic>의 List로 변환
+    final setsList = sets.map((set) => set.toMap()).toList();
+
     return {
-      DatabaseHelper.columnId: id, // DB 컬럼명으로 변경
-      DatabaseHelper.columnExerciseId: exerciseId, // DB 컬럼명으로 변경
-      DatabaseHelper.columnDate: date.toIso8601String(), // DB 컬럼명으로 변경
-      DatabaseHelper.columnSets: jsonEncode(sets),
+      DatabaseHelper.columnId: id,
+      DatabaseHelper.columnExerciseId: exercise.toMap(),
+      DatabaseHelper.columnDate: date.toIso8601String(),
+      DatabaseHelper.columnSets: setsList, // 변환된 setsList 사용
       DatabaseHelper.columnSyncStatus: syncStatus,
     };
   }

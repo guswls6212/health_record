@@ -1,14 +1,15 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../model/exercise.dart';
+import '../model/workout.dart'; // Workout 모델 import
 import '../model/workout_record.dart';
-import 'workout_record_detail_screen.dart'; // 추가
+import 'workout_record_detail_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  final AppLocalizations appLocalizations; // AppLocalizations 변수 추가
+  final AppLocalizations appLocalizations;
   final Function(Locale) setLocale;
   const HomeScreen(
       {Key? key, required this.appLocalizations, required this.setLocale})
@@ -24,13 +25,11 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     Provider.of<WorkoutRecordModel>(context, listen: false)
         .loadWorkoutRecords();
-    Provider.of<ExerciseModel>(context, listen: false).loadExercises();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Scaffold 적용
       appBar: AppBar(
         title: Center(
             child: Text(DateFormat(widget.appLocalizations.date,
@@ -47,7 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           appLocalizations: widget.appLocalizations,
                           setLocale: (locale) {
                             widget.setLocale(locale);
-                            // setState(() {});
                           },
                         )),
               );
@@ -55,34 +53,40 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Consumer2<WorkoutRecordModel, ExerciseModel>(
-        builder: (context, workoutRecordModel, exerciseModel, child) {
+      body: Consumer<WorkoutRecordModel>(
+        builder: (context, workoutRecordModel, child) {
+          // WorkoutRecord를 날짜별로 그룹화
+          final groupedWorkouts = groupBy(
+              workoutRecordModel.workoutRecords, (WorkoutRecord r) => r.date);
+          final workoutList = groupedWorkouts.entries
+              .map((entry) => Workout(date: entry.key, records: entry.value))
+              .toList();
+
           return ListView.builder(
-            itemCount: workoutRecordModel.workoutRecords.length,
+            itemCount: workoutList.length,
             itemBuilder: (context, index) {
-              final record = workoutRecordModel.workoutRecords[index];
-              final exercise = exerciseModel.getExerciseById(record.exerciseId);
-              if (exercise == null) {
-                // 일치하는 운동이 없는 경우
-                return const Center(child: Text('No data'));
-              }
+              final workout = workoutList[index];
+
               return Card(
-                child: ListTile(
-                  leading: Icon(Icons.fitness_center),
-                  title: Text(exercise.name),
-                  subtitle: Text(
-                      '${DateFormat('yyyy-MM-dd').format(record.date)} - ${record.sets.length}세트'),
-                  onTap: () {
-                    // 운동 기록 상세 화면으로 이동
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => WorkoutRecordDetailScreen(
-                          workoutRecord: record,
-                        ),
-                      ),
+                child: ExpansionTile(
+                  title: Text(DateFormat('yyyy-MM-dd').format(workout.date)),
+                  children: workout.records.map((record) {
+                    return ListTile(
+                      leading: const Icon(Icons.fitness_center),
+                      title: Text(record.exercise.name),
+                      subtitle: Text('${record.sets.length}세트'),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => WorkoutRecordDetailScreen(
+                              workoutRecord: record,
+                            ),
+                          ),
+                        );
+                      },
                     );
-                  },
+                  }).toList(),
                 ),
               );
             },

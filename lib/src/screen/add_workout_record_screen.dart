@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../model/workout_record.dart';
 import '../model/exercise.dart';
+import '../model/workout_set.dart'; // WorkoutSet import 추가
 
 class AddWorkoutRecordScreen extends StatefulWidget {
   const AddWorkoutRecordScreen({Key? key}) : super(key: key);
@@ -15,21 +16,21 @@ class AddWorkoutRecordScreen extends StatefulWidget {
 class _AddWorkoutRecordScreenState extends State<AddWorkoutRecordScreen> {
   final _formKey = GlobalKey<FormState>();
   late DateTime _selectedDate;
-  late String _selectedExerciseId;
-  List<Map<String, dynamic>> _sets = [];
+  late Exercise _selectedExercise; // Exercise 타입으로 변경
+  List<WorkoutSet> _sets = []; // WorkoutSet 리스트로 변경
 
   @override
   void initState() {
     super.initState();
     _selectedDate = DateTime.now();
-    _selectedExerciseId =
-        Provider.of<ExerciseModel>(context, listen: false).exercises.first.id;
-    _sets.add({'weight': 0, 'reps': 0, 'oneRM': 0});
+    _selectedExercise =
+        Provider.of<ExerciseModel>(context, listen: false).exercises.first;
+    _sets.add(WorkoutSet()); // 빈 WorkoutSet 추가
   }
 
   void _addSet() {
     setState(() {
-      _sets.add({'weight': 0, 'reps': 0, 'oneRM': 0});
+      _sets.add(WorkoutSet()); // 빈 WorkoutSet 추가
     });
   }
 
@@ -75,16 +76,17 @@ class _AddWorkoutRecordScreenState extends State<AddWorkoutRecordScreen> {
               const SizedBox(height: 16.0),
 
               // 운동 선택
-              DropdownButtonFormField<String>(
-                value: _selectedExerciseId,
-                onChanged: (String? newValue) {
+              DropdownButtonFormField<Exercise>(
+                // Exercise 타입으로 변경
+                value: _selectedExercise,
+                onChanged: (Exercise? newValue) {
                   setState(() {
-                    _selectedExerciseId = newValue!;
+                    _selectedExercise = newValue!;
                   });
                 },
                 items: exerciseModel.exercises.map((exercise) {
-                  return DropdownMenuItem<String>(
-                    value: exercise.id,
+                  return DropdownMenuItem<Exercise>(
+                    value: exercise,
                     child: Text(exercise.name),
                   );
                 }).toList(),
@@ -116,7 +118,8 @@ class _AddWorkoutRecordScreenState extends State<AddWorkoutRecordScreen> {
                     if (_formKey.currentState!.validate()) {
                       final newRecord = WorkoutRecord(
                         id: const Uuid().v4(),
-                        exerciseId: _selectedExerciseId,
+                        exercise:
+                            _selectedExercise, // _selectedExerciseId 대신 _selectedExercise 사용
                         date: _selectedDate,
                         sets: _sets,
                       );
@@ -140,14 +143,15 @@ class _AddWorkoutRecordScreenState extends State<AddWorkoutRecordScreen> {
       children: [
         Expanded(
           child: TextFormField(
-            initialValue: _sets[index]['weight'].toString(),
+            initialValue: _sets[index].weight?.toString() ?? '', // null 처리 추가
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
               labelText: '${index + 1}세트 무게 (kg)',
             ),
             onChanged: (value) {
               setState(() {
-                _sets[index]['weight'] = int.tryParse(value) ?? 0;
+                _sets[index].weight =
+                    double.tryParse(value); // double.tryParse() 사용
               });
             },
             validator: (value) {
@@ -161,14 +165,14 @@ class _AddWorkoutRecordScreenState extends State<AddWorkoutRecordScreen> {
         const SizedBox(width: 8.0),
         Expanded(
           child: TextFormField(
-            initialValue: _sets[index]['reps'].toString(),
+            initialValue: _sets[index].reps?.toString() ?? '', // null 처리 추가
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
               labelText: '${index + 1}세트 횟수',
             ),
             onChanged: (value) {
               setState(() {
-                _sets[index]['reps'] = int.tryParse(value) ?? 0;
+                _sets[index].reps = int.tryParse(value);
               });
             },
             validator: (value) {
@@ -182,14 +186,14 @@ class _AddWorkoutRecordScreenState extends State<AddWorkoutRecordScreen> {
         const SizedBox(width: 8.0),
         Expanded(
           child: TextFormField(
-            initialValue: _sets[index]['oneRM'].toString(),
+            initialValue: _sets[index].duration?.toString() ?? '', // null 처리 추가
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              labelText: '${index + 1}세트 1RM',
+              labelText: '${index + 1}세트 시간 (초)', // '1RM' 대신 '시간 (초)'로 변경
             ),
             onChanged: (value) {
               setState(() {
-                _sets[index]['oneRM'] = int.tryParse(value) ?? 0;
+                _sets[index].duration = int.tryParse(value);
               });
             },
           ),

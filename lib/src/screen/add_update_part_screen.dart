@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../model/exercise.dart';
-import 'package:uuid/uuid.dart';
+import 'package:collection/collection.dart';
 import 'add_update_workout_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'exercise_list_screen.dart'; // ExerciseListScreen import
+import '../model/body_part.dart';
+import 'package:uuid/uuid.dart';
 
 class ExerciseScreen extends StatefulWidget {
-  final AppLocalizations appLocalizations; // AppLocalizations 변수 추가
+  final AppLocalizations appLocalizations;
   final Function(Locale) setLocale;
   const ExerciseScreen(
       {Key? key, required this.appLocalizations, required this.setLocale})
@@ -76,7 +79,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                   final newExercise = Exercise(
                     id: const Uuid().v4(),
                     name: _nameController.text,
-                    bodyPart: _bodyPartController.text,
+                    bodyPart: BodyPart(name: _bodyPartController.text),
                   );
                   Provider.of<ExerciseModel>(context, listen: false)
                       .addExercise(newExercise);
@@ -93,7 +96,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
 
   void _showEditExerciseDialog(Exercise exercise) {
     _nameController.text = exercise.name;
-    _bodyPartController.text = exercise.bodyPart;
+    _bodyPartController.text = exercise.bodyPart.name;
     _selectedId = exercise.id;
 
     showDialog(
@@ -142,7 +145,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                   final editedExercise = Exercise(
                     id: _selectedId,
                     name: _nameController.text,
-                    bodyPart: _bodyPartController.text,
+                    bodyPart: BodyPart(name: _bodyPartController.text),
                   );
                   Provider.of<ExerciseModel>(context, listen: false)
                       .editExercise(editedExercise);
@@ -161,28 +164,49 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
   Widget build(BuildContext context) {
     return Consumer<ExerciseModel>(
       builder: (context, exerciseModel, child) {
+        // bodyPart 이름으로 그룹화
+        final groupedExercises =
+            groupBy(exerciseModel.exercises, (Exercise e) => e.bodyPart.name);
+
         return Scaffold(
           appBar: AppBar(
             title: Text(widget.appLocalizations.type),
           ),
           body: ListView.builder(
-            itemCount: exerciseModel.exercises.length,
+            itemCount: groupedExercises.length,
             itemBuilder: (context, index) {
-              final exercise = exerciseModel.exercises[index];
+              final bodyPartName = groupedExercises.keys.elementAt(index);
+              final exercises = groupedExercises[bodyPartName]!;
+
               return ListTile(
-                title: Text(exercise.name),
-                subtitle: Text(exercise.bodyPart),
+                title: Text('$bodyPartName (${exercises.length})'),
+                onTap: () {
+                  // 새로운 화면으로 이동
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ExerciseListScreen(
+                        bodyPart:
+                            BodyPart(name: bodyPartName), // BodyPart 객체 전달
+                        exercises: exercises,
+                        previousTitle: widget.appLocalizations.type,
+                      ),
+                    ),
+                  );
+                },
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
                       icon: const Icon(Icons.edit),
-                      onPressed: () => _showEditExerciseDialog(exercise),
+                      onPressed: () => _showEditExerciseDialog(exercises.first),
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete),
                       onPressed: () {
-                        exerciseModel.deleteExercise(exercise.id);
+                        for (var exercise in exercises) {
+                          exerciseModel.deleteExercise(exercise.id);
+                        }
                       },
                     ),
                   ],
@@ -192,7 +216,6 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
-              // AddWorkoutScreen으로 이동
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -200,7 +223,6 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                 ),
               );
             },
-            // _showAddExerciseDialog,
             child: const Icon(Icons.add),
           ),
         );

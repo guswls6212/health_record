@@ -1,4 +1,5 @@
 // workout_record_detail_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../model/workout_record.dart';
@@ -21,7 +22,12 @@ class WorkoutRecordDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '운동 ID: ${workoutRecord.exerciseId}',
+              '운동 이름: ${workoutRecord.exercise.name}', // exercise.name으로 변경
+              style: const TextStyle(fontSize: 18),
+            ),
+            const SizedBox(height: 8.0),
+            Text(
+              '운동 부위: ${workoutRecord.exercise.bodyPart.name}', // exercise.bodyPart.name으로 변경
               style: const TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 8.0),
@@ -42,7 +48,8 @@ class WorkoutRecordDetailScreen extends StatelessWidget {
                   final set = workoutRecord.sets[index];
                   return ListTile(
                     title: Text(
-                        '${index + 1}세트: ${set['weight']}kg x ${set['reps']}회, 1RM: ${set['oneRM']}kg'),
+                      '${index + 1}세트: ${set.weight}kg x ${set.reps}회, ${set.duration}초', // set.weight, set.reps, set.duration 사용
+                    ),
                   );
                 },
               ),

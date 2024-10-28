@@ -1,12 +1,14 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import '../database/database_helper.dart'; // DatabaseHelper import
+import '../database/database_helper.dart';
 import '../database/dao/exercise_dao.dart';
+import 'body_part.dart'; // BodyPart import 추가
+import 'package:uuid/uuid.dart';
 
 class Exercise {
   final String id;
   final String name;
-  final String bodyPart;
+  final BodyPart bodyPart; // BodyPart 타입으로 변경
   final bool isDefault;
   int? syncStatus;
 
@@ -20,9 +22,11 @@ class Exercise {
 
   factory Exercise.fromMap(Map<String, dynamic> map) {
     return Exercise(
-      id: map[DatabaseHelper.columnId] as String, // DB 컬럼명으로 변경
-      name: map[DatabaseHelper.columnName] as String, // DB 컬럼명으로 변경
-      bodyPart: map[DatabaseHelper.columnBodyPart] as String, // DB 컬럼명으로 변경
+      id: map[DatabaseHelper.columnId] as String,
+      name: map[DatabaseHelper.columnName] as String,
+      bodyPart: BodyPart(
+          name:
+              map[DatabaseHelper.columnBodyPartId] as String), // BodyPart 객체 생성
       isDefault: map[DatabaseHelper.columnIsDefault] == 1,
       syncStatus: map[DatabaseHelper.columnSyncStatus] as int?,
     );
@@ -30,14 +34,16 @@ class Exercise {
 
   Map<String, dynamic> toMap() {
     return {
-      DatabaseHelper.columnId: id, // DB 컬럼명으로 변경
-      DatabaseHelper.columnName: name, // DB 컬럼명으로 변경
-      DatabaseHelper.columnBodyPart: bodyPart, // DB 컬럼명으로 변경
+      DatabaseHelper.columnId: id,
+      DatabaseHelper.columnName: name,
+      DatabaseHelper.columnBodyPartId: bodyPart.name, // bodyPart.name으로 변경
       DatabaseHelper.columnIsDefault: isDefault ? 1 : 0,
       DatabaseHelper.columnSyncStatus: syncStatus,
     };
   }
 }
+
+// ... (나머지 코드)
 
 class ExerciseModel extends ChangeNotifier {
   final ExerciseDao _exerciseDao = ExerciseDao();
@@ -46,8 +52,16 @@ class ExerciseModel extends ChangeNotifier {
   List<Exercise> get exercises => _exercises;
 
   final List<Exercise> _defaultExercises = [
-    Exercise(id: '1', name: '벤치프레스', bodyPart: '가슴', isDefault: true),
-    Exercise(id: '2', name: '스쿼트', bodyPart: '하체', isDefault: true),
+    Exercise(
+        id: const Uuid().v4(),
+        name: '벤치프레스',
+        bodyPart: BodyPart(name: '가슴'), // BodyPart 객체 생성
+        isDefault: true),
+    Exercise(
+        id: const Uuid().v4(),
+        name: '스쿼트',
+        bodyPart: BodyPart(name: '하체'), // BodyPart 객체 생성
+        isDefault: true),
   ];
 
   Future<void> loadExercises() async {
@@ -102,5 +116,12 @@ class ExerciseModel extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  List<Exercise> getExercisesByBodyPart(String bodyPartName) {
+    // bodyPart별 운동 목록 가져오는 메서드 추가
+    return _exercises
+        .where((exercise) => exercise.bodyPart.name == bodyPartName)
+        .toList();
   }
 }
