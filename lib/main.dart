@@ -12,13 +12,73 @@ import 'src/screen/add_update_part_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
+import 'package:uuid/uuid.dart';
+import 'src/database/dao/exercise_dao.dart';
+import 'src/database/database_helper.dart';
+import './src/model/body_part.dart';
+import './src/database/dao/bodypart_dao.dart';
 
-void main() {
+// 앱 초기화 함수
+// 앱 초기화 함수
+Future<void> initializeApp() async {
+  // 데이터베이스 초기화
+  final databaseHelper = DatabaseHelper();
+  final exerciseDao = ExerciseDao(databaseHelper); // ExerciseDao 인스턴스 생성
+  await databaseHelper.database; // 데이터베이스 연결
+
+  // _defaultBodyParts 추가
+  final defaultBodyParts = [
+    BodyPart(name: '가슴'),
+    BodyPart(name: '등'),
+    BodyPart(name: '하체'),
+    BodyPart(name: '어깨'),
+    BodyPart(name: '팔'),
+  ];
+
+  final bodyPartDao = BodyPartDao(databaseHelper); // BodyPartDao 인스턴스 생성
+
+  for (var bodyPart in defaultBodyParts) {
+    // bodyPart.name으로 데이터베이스에서 신체 부위를 조회합니다.
+    final existingBodyPart = await bodyPartDao.getBodyPartByName(bodyPart.name);
+    if (existingBodyPart == null) {
+      await bodyPartDao.insertBodyPart(bodyPart);
+    }
+  }
+
+  // _defaultExercises 추가
+  final defaultExercises = [
+    Exercise(
+      id: const Uuid().v4(),
+      name: '벤치프레스',
+      bodyPart: BodyPart(name: '가슴'),
+      isDefault: true,
+    ),
+    Exercise(
+      id: const Uuid().v4(),
+      name: '스쿼트',
+      bodyPart: BodyPart(name: '하체'),
+      isDefault: true,
+    ),
+  ];
+
+  for (var exercise in defaultExercises) {
+    // exercise.name으로 데이터베이스에서 운동을 조회합니다.
+    final existingExercise = await exerciseDao.getExerciseByName(exercise.name);
+    if (existingExercise == null) {
+      await exerciseDao.insertExercise(exercise);
+    }
+  }
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // 비동기 작업을 위해 필요
+  await initializeApp(); // 앱 초기화 함수 호출
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => ExerciseModel()),
         ChangeNotifierProvider(create: (context) => WorkoutRecordModel()),
+        ChangeNotifierProvider(create: (context) => BodyPartModel()),
       ],
       child: MyApp(),
     ),
@@ -36,7 +96,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _loadLocale();
   }
@@ -65,7 +124,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       locale: _locale,
       localizationsDelegates: [
-        AppLocalizations.delegate, // 추가
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
@@ -76,8 +135,7 @@ class _MyAppState extends State<MyApp> {
         const Locale('ja', 'JP'),
       ],
       home: FutureBuilder(
-        future: Future.delayed(Duration.zero,
-            () => _appLocalizations), // _appLocalizations가 초기화될 때까지 기다립니다.
+        future: Future.delayed(Duration.zero, () => _appLocalizations),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return MainScreen(
@@ -85,7 +143,7 @@ class _MyAppState extends State<MyApp> {
               setLocale: _setLocale,
             );
           } else {
-            return CircularProgressIndicator(); // 또는 다른 로딩 표시
+            return const CircularProgressIndicator();
           }
         },
       ),
@@ -108,16 +166,6 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   late List<Widget> _widgetOptions; // _widgetOptions 리스트 선언
 
-  // final List<Widget> _widgetOptions = <Widget>[
-  //   Builder(
-  //       builder: (context) => HomeScreen(
-  //             appLocalizations: AppLocalizations.of(context)!,
-  //             setLocale: widget.setLocale,
-  //           )),
-  //   // StepCalendar(appLocalizations: AppLocalizations.of(context)!), // AppLocalizations 전달
-  //   // ExerciseScreen(appLocalizations: AppLocalizations.of(context)!),
-  // ];
-
   @override
   void initState() {
     super.initState();
@@ -127,22 +175,17 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     _widgetOptions = <Widget>[
-      // Builder(
-      // builder: (context) =>
       HomeScreen(
-        appLocalizations: AppLocalizations.of(context)!,
-        setLocale: widget.setLocale,
-      ),
-      // ),
+          appLocalizations: widget.appLocalizations,
+          setLocale: widget.setLocale), // AppLocalizations 전달
       StepCalendar(
-        appLocalizations: AppLocalizations.of(context)!,
-        setLocale: widget.setLocale,
-      ), // AppLocalizations 전달
-      ExerciseScreen(
-        appLocalizations: AppLocalizations.of(context)!,
-        setLocale: widget.setLocale,
-      ),
+          appLocalizations: widget.appLocalizations,
+          setLocale: widget.setLocale), // AppLocalizations 전달
+      BodyPartScreen(
+          appLocalizations: widget.appLocalizations,
+          setLocale: widget.setLocale),
     ];
+
     return Scaffold(
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
