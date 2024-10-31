@@ -2,16 +2,16 @@ import '../../model/exercise.dart';
 import '../database_helper.dart';
 
 class ExerciseDao {
-  final DatabaseHelper _databaseHelper; // DatabaseHelper 타입의 변수 선언
+  final DatabaseHelper _databaseHelper;
 
-  ExerciseDao(this._databaseHelper); // 생성자를 통해 DatabaseHelper 객체를 전달받음
+  ExerciseDao(this._databaseHelper);
 
   Future<List<Exercise>> getDefaultExercises() async {
     final db = await _databaseHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       DatabaseHelper.tableExercises,
       where: '${DatabaseHelper.columnIsDefault} = ?',
-      whereArgs: [1], // isDefault가 true인 운동만 가져오기
+      whereArgs: [1],
     );
     return List.generate(maps.length, (i) {
       return Exercise.fromMap(maps[i]);
@@ -25,52 +25,28 @@ class ExerciseDao {
 
   Future<List<Exercise>> getExercises() async {
     final db = await _databaseHelper.database;
-    final List<Map<String, dynamic>> maps =
-        await db.query(DatabaseHelper.tableExercises);
+    final List<Map<String, dynamic>> maps = await db.query(
+      DatabaseHelper.tableExercises,
+      orderBy: '${DatabaseHelper.columnSortOrder} ASC', // sortOrder 기준으로 정렬
+    );
     return List.generate(maps.length, (i) {
       return Exercise.fromMap(maps[i]);
     });
   }
 
-  Future<Exercise?> getExerciseById(String id) async {
-    final db = await _databaseHelper.database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      DatabaseHelper.tableExercises,
-      where: '${DatabaseHelper.columnId} = ?',
-      whereArgs: [id],
-    );
-    if (maps.isNotEmpty) {
-      return Exercise.fromMap(maps.first);
-    } else {
-      return null;
-    }
-  }
-
-  Future<Exercise?> getExerciseByName(String name) async {
-    final db = await _databaseHelper.database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      DatabaseHelper.tableExercises,
-      where: '${DatabaseHelper.columnName} = ?', // 'name' 컬럼을 기준으로 조회
-      whereArgs: [name],
-    );
-
-    if (maps.isNotEmpty) {
-      return Exercise.fromMap(maps.first);
-    } else {
-      return null;
-    }
-  }
-
   Future<void> updateExercise(Exercise exercise) async {
     final db = await _databaseHelper.database;
     await db.update(DatabaseHelper.tableExercises, exercise.toMap(),
-        where: '${DatabaseHelper.columnId} = ?', whereArgs: [exercise.id]);
+        where: '${DatabaseHelper.columnName} = ?',
+        whereArgs: [exercise.name]); // id 대신 name 사용
   }
 
-  Future<void> deleteExercise(String id) async {
+  Future<void> deleteExercise(String name) async {
+    // id 대신 name 사용
     final db = await _databaseHelper.database;
     await db.delete(DatabaseHelper.tableExercises,
-        where: '${DatabaseHelper.columnId} = ?', whereArgs: [id]);
+        where: '${DatabaseHelper.columnName} = ?',
+        whereArgs: [name]); // id 대신 name 사용
   }
 
   Future<List<Exercise>> getExercisesToSync(String userEmail) async {
@@ -84,5 +60,20 @@ class ExerciseDao {
     return List.generate(maps.length, (i) {
       return Exercise.fromMap(maps[i]);
     });
+  }
+
+  Future<Exercise?> getExerciseByName(String name) async {
+    // getExerciseByName 메서드 추가
+    final db = await _databaseHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      DatabaseHelper.tableExercises,
+      where: '${DatabaseHelper.columnName} = ?', // name으로 검색
+      whereArgs: [name],
+    );
+    if (maps.isNotEmpty) {
+      return Exercise.fromMap(maps.first);
+    } else {
+      return null;
+    }
   }
 }

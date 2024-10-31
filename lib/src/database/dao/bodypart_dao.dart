@@ -46,4 +46,11 @@ class BodyPartDao {
     await db.delete(DatabaseHelper.tableBodyParts,
         where: '${DatabaseHelper.columnName} = ?', whereArgs: [name]);
   }
+
+  Future<int> getLastSortOrder() async {
+    final db = await _databaseHelper.database;
+    final result = await db.rawQuery(
+        'SELECT MAX(sort_order) FROM ${DatabaseHelper.tableBodyParts}');
+    return (result.first['MAX(sort_order)'] as int?) ?? -1; // null일 경우 -1 반환
+  }
 }

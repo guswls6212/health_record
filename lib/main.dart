@@ -8,7 +8,7 @@ import 'src/screen/step_calendar_screen.dart';
 import 'src/model/workout_record.dart';
 import 'src/screen/settings_screen.dart';
 import 'src/screen/add_workout_record_screen.dart';
-import 'src/screen/add_update_part_screen.dart';
+import 'src/screen/bodypart_list_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
@@ -28,11 +28,11 @@ Future<void> initializeApp() async {
 
   // _defaultBodyParts 추가
   final defaultBodyParts = [
-    BodyPart(name: '가슴'),
-    BodyPart(name: '등'),
-    BodyPart(name: '하체'),
-    BodyPart(name: '어깨'),
-    BodyPart(name: '팔'),
+    BodyPart(name: '가슴', sortOrder: 0),
+    BodyPart(name: '등', sortOrder: 1),
+    BodyPart(name: '하체', sortOrder: 2),
+    BodyPart(name: '어깨', sortOrder: 3),
+    BodyPart(name: '팔', sortOrder: 4),
   ];
 
   final bodyPartDao = BodyPartDao(databaseHelper); // BodyPartDao 인스턴스 생성
@@ -48,22 +48,21 @@ Future<void> initializeApp() async {
   // _defaultExercises 추가
   final defaultExercises = [
     Exercise(
-      id: const Uuid().v4(),
       name: '벤치프레스',
-      bodyPart: BodyPart(name: '가슴'),
+      bodyPart: BodyPart(name: '가슴', sortOrder: 0), // sortOrder 추가
       isDefault: true,
+      sortOrder: 0,
     ),
     Exercise(
-      id: const Uuid().v4(),
       name: '스쿼트',
-      bodyPart: BodyPart(name: '하체'),
+      bodyPart: BodyPart(name: '하체', sortOrder: 1), // sortOrder 추가
       isDefault: true,
+      sortOrder: 1,
     ),
   ];
-
   for (var exercise in defaultExercises) {
-    // exercise.name으로 데이터베이스에서 운동을 조회합니다.
-    final existingExercise = await exerciseDao.getExerciseByName(exercise.name);
+    final existingExercise =
+        await exerciseDao.getExerciseByName(exercise.name); // id 대신 name 사용
     if (existingExercise == null) {
       await exerciseDao.insertExercise(exercise);
     }
@@ -181,7 +180,7 @@ class _MainScreenState extends State<MainScreen> {
       StepCalendar(
           appLocalizations: widget.appLocalizations,
           setLocale: widget.setLocale), // AppLocalizations 전달
-      BodyPartScreen(
+      BodyPartListScreen(
           appLocalizations: widget.appLocalizations,
           setLocale: widget.setLocale),
     ];
@@ -198,7 +197,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
-            label: '달력',
+            label: '여정',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.fitness_center),

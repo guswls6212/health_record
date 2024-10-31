@@ -28,7 +28,7 @@ class WorkoutRecord {
     return WorkoutRecord(
       id: map[DatabaseHelper.columnId] as String,
       exercise: Exercise.fromMap(
-          map[DatabaseHelper.columnExerciseId] as Map<String, dynamic>),
+          map[DatabaseHelper.columnExerciseName] as Map<String, dynamic>),
       date: DateTime.parse(map[DatabaseHelper.columnDate] as String),
       sets: sets, // 변환된 sets 사용
       syncStatus: map[DatabaseHelper.columnSyncStatus] as int?,
@@ -41,7 +41,7 @@ class WorkoutRecord {
 
     return {
       DatabaseHelper.columnId: id,
-      DatabaseHelper.columnExerciseId: exercise.toMap(),
+      DatabaseHelper.columnExerciseName: exercise.toMap(),
       DatabaseHelper.columnDate: date.toIso8601String(),
       DatabaseHelper.columnSets: setsList, // 변환된 setsList 사용
       DatabaseHelper.columnSyncStatus: syncStatus,

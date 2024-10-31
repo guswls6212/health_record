@@ -79,7 +79,6 @@ class _AddExerciseScreenState extends State<AddExerciseScreen> {
                   if (_formKey.currentState!.validate()) {
                     // 유효성 검사 통과 시
                     final newExercise = Exercise(
-                      id: const Uuid().v4(),
                       name: _nameController.text,
                       bodyPart:
                           BodyPart(name: _selectedBodyPart!), // BodyPart 객체 생성

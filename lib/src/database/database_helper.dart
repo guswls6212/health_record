@@ -8,6 +8,7 @@ import '../model/exercise.dart';
 import '../model/workout_record.dart';
 import '../model/user.dart';
 import '../model/workout_set.dart';
+import '../model/body_part.dart';
 
 class DatabaseHelper {
   static final _databaseName = "health_app.db";
@@ -19,16 +20,18 @@ class DatabaseHelper {
   static final tableWorkoutSets = 'workout_sets';
 
   static final columnId = 'id';
-  static final columnExerciseId = 'exercise_id';
+  static final columnExerciseName = 'exercise_name';
   static final columnDate = 'date';
   static final columnSets = 'sets';
   static final columnName = 'name';
-  static final columnBodyPartId = 'body_part_id';
+  static final columnBodyPartName = 'body_part_name';
   static final columnIsDefault = 'is_default';
   static final columnWorkoutRecordId = 'workout_record_id';
-  static final columnWeight = 'weight'; // workout_sets 테이블의 weight 컬럼
-  static final columnReps = 'reps'; // workout_sets 테이블의 reps 컬럼
-  static final columnDuration = 'duration'; // workout_sets 테이블의 duration 컬럼
+  static final columnWeight = 'weight';
+  static final columnReps = 'reps';
+  static final columnDuration = 'duration';
+  static final columnSetNum = 'set_num';
+  static final columnSortOrder = 'sort_order';
 
   static final tableUsers = 'users';
   static final columnUserEmail = 'user_email';
@@ -56,40 +59,41 @@ class DatabaseHelper {
   Future _onCreate(Database db, int version) async {
     await db.execute('''
       CREATE TABLE $tableBodyParts (
-        $columnId TEXT PRIMARY KEY,
-        $columnName TEXT NOT NULL
+        $columnName TEXT PRIMARY KEY,
+        $columnSortOrder INTEGER NOT NULL  -- sort_order 컬럼 추가 및 NOT NULL 제약 조건 설정
       )
     ''');
     await db.execute('''
       CREATE TABLE $tableExercises (
-        $columnId TEXT PRIMARY KEY,
-        $columnName TEXT NOT NULL,
-        $columnBodyPartId TEXT NOT NULL,
+        $columnName TEXT PRIMARY KEY,
+        $columnBodyPartName TEXT NOT NULL,
         $columnIsDefault INTEGER NOT NULL,
         $columnUserEmail TEXT,
         $columnSyncStatus INTEGER DEFAULT 0,
         $columnVersion INTEGER DEFAULT 1,
-        FOREIGN KEY ($columnBodyPartId) REFERENCES $tableBodyParts($columnId)
+        $columnSortOrder INTEGER,  -- sort_order 컬럼 추가
+        FOREIGN KEY ($columnBodyPartName) REFERENCES $tableBodyParts($columnName)
       )
     ''');
     await db.execute('''
       CREATE TABLE $tableWorkoutRecords (
         $columnId TEXT PRIMARY KEY,
-        $columnExerciseId TEXT NOT NULL,
+        $columnExerciseName TEXT NOT NULL,
         $columnDate TEXT NOT NULL,
         $columnUserEmail TEXT,
         $columnSyncStatus INTEGER DEFAULT 0,
         $columnVersion INTEGER DEFAULT 1,
-        FOREIGN KEY ($columnExerciseId) REFERENCES $tableExercises($columnId)
+        FOREIGN KEY ($columnExerciseName) REFERENCES $tableExercises($columnName)
       )
     ''');
     await db.execute('''
       CREATE TABLE $tableWorkoutSets (
         $columnId TEXT PRIMARY KEY,
         $columnWorkoutRecordId TEXT NOT NULL,
-        $columnWeight REAL,  -- weight 컬럼 추가
-        $columnReps INTEGER,  -- reps 컬럼 추가
-        $columnDuration INTEGER,  -- duration 컬럼 추가
+        $columnSetNum INTEGER,
+        $columnWeight REAL,
+        $columnReps INTEGER,
+        $columnDuration INTEGER,
         FOREIGN KEY ($columnWorkoutRecordId) REFERENCES $tableWorkoutRecords($columnId)
       )
     ''');
@@ -107,7 +111,7 @@ class DatabaseHelper {
     await db.transaction((txn) async {
       final workoutRecordId = await txn.insert(tableWorkoutRecords, {
         'id': record.id,
-        'exercise_id': record.exercise.id,
+        'exercise_name': record.exercise.name,
         'date': record.date.toIso8601String(),
         'user_email': record.exercise.bodyPart.name, // TODO: user_email 값 설정
         'sync_status': record.syncStatus ?? 0,
@@ -117,9 +121,10 @@ class DatabaseHelper {
         await txn.insert(tableWorkoutSets, {
           'id': const Uuid().v4(),
           'workout_record_id': workoutRecordId,
-          'weight': set.weight, // weight 값 추가
-          'reps': set.reps, // reps 값 추가
-          'duration': set.duration, // duration 값 추가
+          'set_num': set.set,
+          'weight': set.weight,
+          'reps': set.reps,
+          'duration': set.duration,
         });
       }
     });
@@ -141,6 +146,7 @@ class DatabaseHelper {
 
       final sets = workoutSetMaps.map((setMap) {
         return WorkoutSet(
+          set: setMap['set_num'] as int?,
           weight: setMap['weight'] as double?,
           reps: setMap['reps'] as int?,
           duration: setMap['duration'] as int?,
@@ -159,7 +165,7 @@ class DatabaseHelper {
       await txn.update(
         tableWorkoutRecords,
         {
-          'exercise_id': record.exercise.id,
+          'exercise_name': record.exercise.name,
           'date': record.date.toIso8601String(),
           'user_email': record.exercise.bodyPart.name, // TODO: user_email 값 설정
           'sync_status': record.syncStatus ?? 0,
@@ -177,9 +183,10 @@ class DatabaseHelper {
         await txn.insert(tableWorkoutSets, {
           'id': const Uuid().v4(),
           'workout_record_id': record.id,
-          'weight': set.weight, // weight 값 추가
-          'reps': set.reps, // reps 값 추가
-          'duration': set.duration, // duration 값 추가
+          'set_num': set.set,
+          'weight': set.weight,
+          'reps': set.reps,
+          'duration': set.duration,
         });
       }
     });
@@ -232,12 +239,13 @@ class DatabaseHelper {
   Future<void> updateExercise(Exercise exercise) async {
     Database db = await this.database;
     await db.update(tableExercises, exercise.toMap(),
-        where: '$columnId = ?', whereArgs: [exercise.id]);
+        where: '$columnName = ?', whereArgs: [exercise.name]);
   }
 
-  Future<void> deleteExercise(String id) async {
+  Future<void> deleteExercise(String name) async {
     Database db = await this.database;
-    await db.delete(tableExercises, where: '$columnId = ?', whereArgs: [id]);
+    await db
+        .delete(tableExercises, where: '$columnName = ?', whereArgs: [name]);
   }
 
   // 동기화되지 않은 Exercise 가져오기 (userEmail 사용)
@@ -290,5 +298,39 @@ class DatabaseHelper {
       where: '$columnUserEmail = ?',
       whereArgs: [email],
     );
+  }
+
+  // BodyPart 관련 메서드
+  Future<void> insertBodyPart(BodyPart bodyPart) async {
+    Database db = await this.database;
+    await db.insert(
+        tableBodyParts, bodyPart.toMap()); // bodyPart.toMap()에서 sort_order 값 포함
+  }
+
+  Future<List<BodyPart>> getBodyParts() async {
+    Database db = await this.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableBodyParts,
+      orderBy: '$columnSortOrder ASC',
+    );
+    return List.generate(maps.length, (i) {
+      return BodyPart.fromMap(maps[i]);
+    });
+  }
+
+  Future<void> updateBodyPart(BodyPart bodyPart) async {
+    Database db = await this.database;
+    await db.update(
+      tableBodyParts,
+      bodyPart.toMap(),
+      where: '$columnName = ?',
+      whereArgs: [bodyPart.name],
+    );
+  }
+
+  Future<void> deleteBodyPart(String name) async {
+    Database db = await this.database;
+    await db
+        .delete(tableBodyParts, where: '$columnName = ?', whereArgs: [name]);
   }
 }

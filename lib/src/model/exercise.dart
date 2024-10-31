@@ -5,52 +5,50 @@ import 'body_part.dart';
 import '../database/database_helper.dart';
 
 class Exercise {
-  final String id;
   final String name;
   final BodyPart bodyPart;
   final bool isDefault;
   int? syncStatus;
+  int sortOrder; // sortOrder 필드 추가
 
   Exercise({
-    required this.id,
     required this.name,
     required this.bodyPart,
     this.isDefault = false,
     this.syncStatus,
+    this.sortOrder = 0, // sortOrder 필드 추가
   });
 
   factory Exercise.fromMap(Map<String, dynamic> map) {
     return Exercise(
-      id: map[DatabaseHelper.columnId] as String,
       name: map[DatabaseHelper.columnName] as String,
-      bodyPart: BodyPart(
-          name:
-              map[DatabaseHelper.columnBodyPartId] as String), // BodyPart 객체 생성
+      bodyPart:
+          BodyPart(name: map[DatabaseHelper.columnBodyPartName] as String),
       isDefault: map[DatabaseHelper.columnIsDefault] == 1,
       syncStatus: map[DatabaseHelper.columnSyncStatus] as int?,
+      sortOrder: map[DatabaseHelper.columnSortOrder] as int, // sortOrder 필드 추가
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      DatabaseHelper.columnId: id,
       DatabaseHelper.columnName: name,
-      DatabaseHelper.columnBodyPartId: bodyPart.name, // bodyPart.name으로 변경
+      DatabaseHelper.columnBodyPartName: bodyPart.name,
       DatabaseHelper.columnIsDefault: isDefault ? 1 : 0,
       DatabaseHelper.columnSyncStatus: syncStatus,
+      DatabaseHelper.columnSortOrder: sortOrder, // sortOrder 필드 추가
     };
   }
 }
 
 class ExerciseModel extends ChangeNotifier {
-  final DatabaseHelper _databaseHelper =
-      DatabaseHelper(); // DatabaseHelper 객체 생성
-  late ExerciseDao _exerciseDao; // ExerciseDao 객체 생성
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
+  late ExerciseDao _exerciseDao;
 
   ExerciseModel() {
-    _exerciseDao =
-        ExerciseDao(_databaseHelper); // ExerciseDao에 DatabaseHelper 객체 전달
+    _exerciseDao = ExerciseDao(_databaseHelper);
   }
+
   List<Exercise> _exercises = [];
 
   List<Exercise> get exercises => _exercises;
@@ -68,21 +66,24 @@ class ExerciseModel extends ChangeNotifier {
 
   void editExercise(Exercise exercise) async {
     await _exerciseDao.updateExercise(exercise);
-    final index = _exercises.indexWhere((e) => e.id == exercise.id);
+    final index =
+        _exercises.indexWhere((e) => e.name == exercise.name); // id 대신 name 사용
     if (index != -1) {
       _exercises[index] = exercise;
       notifyListeners();
     }
   }
 
-  void deleteExercise(String id) async {
-    await _exerciseDao.deleteExercise(id);
-    _exercises.removeWhere((e) => e.id == id);
+  void deleteExercise(String name) async {
+    // id 대신 name 사용
+    await _exerciseDao.deleteExercise(name); // id 대신 name 사용
+    _exercises.removeWhere((e) => e.name == name); // id 대신 name 사용
     notifyListeners();
   }
 
-  Exercise? getExerciseById(String id) {
-    return _exercises.firstWhereOrNull((e) => e.id == id);
+  Exercise? getExerciseByName(String name) {
+    // id 대신 name 사용
+    return _exercises.firstWhereOrNull((e) => e.name == name); // id 대신 name 사용
   }
 
   List<Exercise> getExercisesByBodyPart(String bodyPartName) {

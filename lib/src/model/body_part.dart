@@ -4,20 +4,24 @@ import '../database/dao/bodypart_dao.dart';
 
 class BodyPart {
   final String name;
+  int sortOrder;
 
   BodyPart({
     required this.name,
+    this.sortOrder = 0,
   });
 
   factory BodyPart.fromMap(Map<String, dynamic> map) {
     return BodyPart(
       name: map['name'] as String,
+      sortOrder: map['sort_order'] as int,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'name': name,
+      'sort_order': sortOrder,
     };
   }
 }
@@ -26,9 +30,11 @@ class BodyPartModel extends ChangeNotifier {
   final DatabaseHelper _databaseHelper = DatabaseHelper();
   late BodyPartDao _bodyPartDao;
 
+  BodyPartDao get bodyPartDao => _bodyPartDao;
+
   BodyPartModel() {
     _bodyPartDao = BodyPartDao(_databaseHelper);
-    loadBodyParts(); // 초기화 시 데이터 로드
+    loadBodyParts();
   }
 
   List<BodyPart> _bodyParts = [];
@@ -41,6 +47,7 @@ class BodyPartModel extends ChangeNotifier {
   }
 
   Future<void> addBodyPart(BodyPart bodyPart) async {
+    bodyPart.sortOrder = _bodyParts.length;
     await _bodyPartDao.insertBodyPart(bodyPart);
     _bodyParts.add(bodyPart);
     notifyListeners();
