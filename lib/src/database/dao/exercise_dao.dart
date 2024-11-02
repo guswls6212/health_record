@@ -76,4 +76,14 @@ class ExerciseDao {
       return null;
     }
   }
+
+  Future<bool> hasDefaultExercises() async {
+    final db = await _databaseHelper.database;
+    final result = await db.query(
+      DatabaseHelper.tableExercises,
+      where: '${DatabaseHelper.columnIsDefault} = ?',
+      whereArgs: [1],
+    );
+    return result.isNotEmpty;
+  }
 }

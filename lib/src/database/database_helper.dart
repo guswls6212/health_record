@@ -60,7 +60,8 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE $tableBodyParts (
         $columnName TEXT PRIMARY KEY,
-        $columnSortOrder INTEGER NOT NULL  -- sort_order 컬럼 추가 및 NOT NULL 제약 조건 설정
+        $columnSortOrder INTEGER NOT NULL,  -- sort_order 컬럼 추가 및 NOT NULL 제약 조건 설정
+        $columnIsDefault INTEGER NOT NULL DEFAULT 0
       )
     ''');
     await db.execute('''

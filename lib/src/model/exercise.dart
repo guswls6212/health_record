@@ -39,6 +39,22 @@ class Exercise {
       DatabaseHelper.columnSortOrder: sortOrder, // sortOrder 필드 추가
     };
   }
+
+  Exercise copyWith({
+    String? name,
+    BodyPart? bodyPart,
+    bool? isDefault,
+    int? syncStatus,
+    int? sortOrder,
+  }) {
+    return Exercise(
+      name: name ?? this.name,
+      bodyPart: bodyPart ?? this.bodyPart,
+      isDefault: isDefault ?? this.isDefault,
+      syncStatus: syncStatus ?? this.syncStatus,
+      sortOrder: sortOrder ?? this.sortOrder,
+    );
+  }
 }
 
 class ExerciseModel extends ChangeNotifier {

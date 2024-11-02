@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:health_record/src/model/exercise.dart';
+import 'package:provider/provider.dart';
 import '../database/database_helper.dart';
 import '../database/dao/bodypart_dao.dart';
 
 class BodyPart {
   final String name;
   int sortOrder;
+  bool isDefault;
 
   BodyPart({
     required this.name,
     this.sortOrder = 0,
+    this.isDefault = false,
   });
 
   factory BodyPart.fromMap(Map<String, dynamic> map) {
     return BodyPart(
       name: map['name'] as String,
       sortOrder: map['sort_order'] as int,
+      isDefault: map['is_default'] == 1,
     );
   }
 
@@ -22,7 +27,15 @@ class BodyPart {
     return {
       'name': name,
       'sort_order': sortOrder,
+      'is_default': isDefault ? 1 : 0,
     };
+  }
+
+  BodyPart copyWith({String? name, int? sortOrder}) {
+    return BodyPart(
+      name: name ?? this.name,
+      sortOrder: sortOrder ?? this.sortOrder,
+    );
   }
 }
 
@@ -53,11 +66,32 @@ class BodyPartModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateBodyPart(BodyPart bodyPart) async {
-    await _bodyPartDao.updateBodyPart(bodyPart);
+  Future<void> updateBodyPart(
+      BuildContext context, BodyPart bodyPart, String newName) async {
+    // context 매개변수 추가
     final index = _bodyParts.indexWhere((e) => e.name == bodyPart.name);
+
     if (index != -1) {
-      _bodyParts[index] = bodyPart;
+      final updatedBodyPart =
+          bodyPart.copyWith(name: newName, sortOrder: bodyPart.sortOrder);
+
+      // ExerciseModel을 가져옵니다.
+      final exerciseModel = Provider.of<ExerciseModel>(context, listen: false);
+      final exercisesToUpdate =
+          await exerciseModel.getExercisesByBodyPart(bodyPart.name);
+
+      // 각 Exercise의 bodyPart를 새로운 bodyPart로 업데이트합니다.
+      for (var exercise in exercisesToUpdate) {
+        final updatedExercise = exercise.copyWith(
+          bodyPart: updatedBodyPart,
+        );
+        exerciseModel.editExercise(updatedExercise); // ExerciseModel 업데이트
+      }
+
+      // BodyPartModel 업데이트
+      await _bodyPartDao.updateBodyPart(
+          updatedBodyPart, bodyPart.name); // 수정 전 이름 전달
+      _bodyParts[index] = updatedBodyPart;
       notifyListeners();
     }
   }

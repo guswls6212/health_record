@@ -35,10 +35,15 @@ class BodyPartDao {
     });
   }
 
-  Future<void> updateBodyPart(BodyPart bodyPart) async {
+  Future<void> updateBodyPart(BodyPart bodyPart, String oldName) async {
+    // oldName 매개변수 추가
     final db = await _databaseHelper.database;
-    await db.update(DatabaseHelper.tableBodyParts, bodyPart.toMap(),
-        where: '${DatabaseHelper.columnName} = ?', whereArgs: [bodyPart.name]);
+    await db.update(
+      DatabaseHelper.tableBodyParts,
+      bodyPart.toMap(),
+      where: '${DatabaseHelper.columnName} = ?',
+      whereArgs: [oldName], // where 조건에 oldName 사용
+    );
   }
 
   Future<void> deleteBodyPart(String name) async {
@@ -52,5 +57,15 @@ class BodyPartDao {
     final result = await db.rawQuery(
         'SELECT MAX(sort_order) FROM ${DatabaseHelper.tableBodyParts}');
     return (result.first['MAX(sort_order)'] as int?) ?? -1; // null일 경우 -1 반환
+  }
+
+  Future<bool> hasDefaultBodyParts() async {
+    final db = await _databaseHelper.database;
+    final result = await db.query(
+      DatabaseHelper.tableBodyParts,
+      where: '${DatabaseHelper.columnIsDefault} = ?',
+      whereArgs: [1],
+    );
+    return result.isNotEmpty;
   }
 }

@@ -19,52 +19,63 @@ import './src/model/body_part.dart';
 import './src/database/dao/bodypart_dao.dart';
 
 // 앱 초기화 함수
-// 앱 초기화 함수
 Future<void> initializeApp() async {
   // 데이터베이스 초기화
   final databaseHelper = DatabaseHelper();
   final exerciseDao = ExerciseDao(databaseHelper); // ExerciseDao 인스턴스 생성
   await databaseHelper.database; // 데이터베이스 연결
 
-  // _defaultBodyParts 추가
-  final defaultBodyParts = [
-    BodyPart(name: '가슴', sortOrder: 0),
-    BodyPart(name: '등', sortOrder: 1),
-    BodyPart(name: '하체', sortOrder: 2),
-    BodyPart(name: '어깨', sortOrder: 3),
-    BodyPart(name: '팔', sortOrder: 4),
-  ];
+  final bodyPartDao = BodyPartDao(databaseHelper);
 
-  final bodyPartDao = BodyPartDao(databaseHelper); // BodyPartDao 인스턴스 생성
+  // isDefault: true인 BodyPart가 있는지 확인
+  final hasDefaultBodyParts = await bodyPartDao.hasDefaultBodyParts();
 
-  for (var bodyPart in defaultBodyParts) {
-    // bodyPart.name으로 데이터베이스에서 신체 부위를 조회합니다.
-    final existingBodyPart = await bodyPartDao.getBodyPartByName(bodyPart.name);
-    if (existingBodyPart == null) {
-      await bodyPartDao.insertBodyPart(bodyPart);
+  if (!hasDefaultBodyParts) {
+    // isDefault: true인 BodyPart가 없을 때만 추가
+    final defaultBodyParts = [
+      BodyPart(name: '가슴', sortOrder: 0, isDefault: true),
+      BodyPart(name: '등', sortOrder: 1, isDefault: true),
+      BodyPart(name: '하체', sortOrder: 2, isDefault: true),
+      BodyPart(name: '어깨', sortOrder: 3, isDefault: true),
+      BodyPart(name: '팔', sortOrder: 4, isDefault: true),
+    ];
+    final bodyPartDao = BodyPartDao(databaseHelper); // BodyPartDao 인스턴스 생성
+
+    for (var bodyPart in defaultBodyParts) {
+      // bodyPart.name으로 데이터베이스에서 신체 부위를 조회합니다.
+      final existingBodyPart =
+          await bodyPartDao.getBodyPartByName(bodyPart.name);
+      if (existingBodyPart == null) {
+        await bodyPartDao.insertBodyPart(bodyPart);
+      }
     }
   }
 
-  // _defaultExercises 추가
-  final defaultExercises = [
-    Exercise(
-      name: '벤치프레스',
-      bodyPart: BodyPart(name: '가슴', sortOrder: 0), // sortOrder 추가
-      isDefault: true,
-      sortOrder: 0,
-    ),
-    Exercise(
-      name: '스쿼트',
-      bodyPart: BodyPart(name: '하체', sortOrder: 1), // sortOrder 추가
-      isDefault: true,
-      sortOrder: 1,
-    ),
-  ];
-  for (var exercise in defaultExercises) {
-    final existingExercise =
-        await exerciseDao.getExerciseByName(exercise.name); // id 대신 name 사용
-    if (existingExercise == null) {
-      await exerciseDao.insertExercise(exercise);
+  // isDefault: true인 Exercise가 있는지 확인
+  final hasDefaultExercises = await exerciseDao.hasDefaultExercises();
+
+  if (!hasDefaultExercises) {
+    // isDefault: true인 Exercise가 없을 때만 추가
+    final defaultExercises = [
+      Exercise(
+        name: '벤치프레스',
+        bodyPart: BodyPart(name: '가슴', sortOrder: 0, isDefault: true),
+        isDefault: true,
+        sortOrder: 0,
+      ),
+      Exercise(
+        name: '스쿼트',
+        bodyPart: BodyPart(name: '하체', sortOrder: 1, isDefault: true),
+        isDefault: true,
+        sortOrder: 1,
+      ),
+    ];
+    for (var exercise in defaultExercises) {
+      final existingExercise =
+          await exerciseDao.getExerciseByName(exercise.name); // id 대신 name 사용
+      if (existingExercise == null) {
+        await exerciseDao.insertExercise(exercise);
+      }
     }
   }
 }
