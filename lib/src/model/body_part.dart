@@ -59,6 +59,10 @@ class BodyPartModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  BodyPart getBodyPartByName(String name) {
+    return _bodyParts.firstWhere((bodyPart) => bodyPart.name == name);
+  }
+
   Future<void> addBodyPart(BodyPart bodyPart) async {
     bodyPart.sortOrder = _bodyParts.length;
     await _bodyPartDao.insertBodyPart(bodyPart);

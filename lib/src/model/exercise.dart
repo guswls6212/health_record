@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import '../database/dao/exercise_dao.dart';
@@ -106,5 +108,14 @@ class ExerciseModel extends ChangeNotifier {
     return _exercises
         .where((exercise) => exercise.bodyPart.name == bodyPartName)
         .toList();
+  }
+
+  Future<int> getNextSortOrder(String bodyPartName) async {
+    final exercises = getExercisesByBodyPart(bodyPartName);
+    if (exercises.isEmpty) {
+      return 1;
+    } else {
+      return exercises.map((e) => e.sortOrder).reduce(max) + 1;
+    }
   }
 }

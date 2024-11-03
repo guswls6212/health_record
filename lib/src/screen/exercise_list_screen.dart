@@ -29,6 +29,110 @@ class _ExerciseListScreenState extends State<ExerciseListScreen> {
     _bodyPart = widget.bodyPart;
   }
 
+  void _showAddExerciseDialog(BuildContext context) {
+    String newExerciseName = '';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('운동 추가'),
+          content: TextField(
+            onChanged: (value) {
+              newExerciseName = value;
+            },
+            decoration: InputDecoration(hintText: '운동 이름'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('취소'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('저장'),
+              onPressed: () async {
+                if (newExerciseName.isNotEmpty) {
+                  // SQLite에 새로운 운동 저장
+                  final exerciseModel =
+                      Provider.of<ExerciseModel>(context, listen: false);
+                  final bodyPartModel =
+                      Provider.of<BodyPartModel>(context, listen: false);
+
+                  final bodyPart = bodyPartModel.getBodyPartByName(
+                      widget.bodyPart.name); // BodyPartModel에서 bodyPart 가져오기
+
+                  var newExercise = Exercise(
+                    name: newExerciseName,
+                    bodyPart: bodyPart!,
+                    isDefault: false,
+                    sortOrder: await exerciseModel
+                        .getNextSortOrder(bodyPart.name), // sortOrder 계산
+                  );
+                  exerciseModel.addExercise(newExercise);
+
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 삭제 확인 다이얼로그 표시 함수
+  void _showDeleteConfirmationDialog(
+      BuildContext context, Exercise exercise, ExerciseModel exerciseModel) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('삭제 확인'),
+          content: Text('${exercise.name} 운동을 삭제하시겠습니까?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('취소'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('삭제'),
+              onPressed: () {
+                // 운동 삭제
+                _deleteExerciseWithSnackbar(context, exercise, exerciseModel);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 운동 삭제 및 스낵바 표시 함수
+  void _deleteExerciseWithSnackbar(
+      BuildContext context, Exercise exercise, ExerciseModel exerciseModel) {
+    // 운동 삭제
+    exerciseModel.deleteExercise(exercise.name);
+
+    // 스낵바 표시
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${exercise.name} 운동을 삭제했습니다.'),
+        action: SnackBarAction(
+          label: '실행 취소',
+          onPressed: () {
+            // 실행 취소 로직: 삭제된 운동 다시 추가
+            exerciseModel.addExercise(exercise);
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,14 +204,33 @@ class _ExerciseListScreenState extends State<ExerciseListScreen> {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: widget.exercises.length,
-        itemBuilder: (context, index) {
-          final exercise = widget.exercises[index];
-          return ListTile(
-            title: Text(exercise.name),
-          );
+      body: Consumer<ExerciseModel>(builder: (context, exerciseModel, child) {
+        final exercises = exerciseModel.getExercisesByBodyPart(_bodyPart.name);
+        return ListView.builder(
+          itemCount: exercises.length,
+          itemBuilder: (context, index) {
+            final exercise = exercises[index];
+            return ListTile(
+              title: Text(exercise.name),
+              trailing: IconButton(
+                // trailing에 IconButton 추가
+                icon: Icon(Icons.delete),
+                onPressed: () {
+                  // 삭제 확인 다이얼로그 표시
+                  _showDeleteConfirmationDialog(
+                      context, exercise, exerciseModel);
+                },
+              ),
+            );
+          },
+        );
+      }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // 운동 추가 다이얼로그 표시
+          _showAddExerciseDialog(context);
         },
+        child: Icon(Icons.add),
       ),
     );
   }
