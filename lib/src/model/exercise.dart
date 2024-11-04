@@ -82,12 +82,14 @@ class ExerciseModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void editExercise(Exercise exercise) async {
-    await _exerciseDao.updateExercise(exercise);
-    final index =
-        _exercises.indexWhere((e) => e.name == exercise.name); // id 대신 name 사용
+  void editExercise(Exercise originalExercise, Exercise editedExercise) async {
+    // originalExercise 추가
+    await _exerciseDao.updateExercise(
+        originalExercise, editedExercise); // ExerciseDao의 updateExercise 메서드 수정
+    final index = _exercises
+        .indexWhere((e) => e.name == originalExercise.name); // 원래 이름으로 검색
     if (index != -1) {
-      _exercises[index] = exercise;
+      _exercises[index] = editedExercise;
       notifyListeners();
     }
   }

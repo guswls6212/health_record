@@ -133,6 +133,69 @@ class _ExerciseListScreenState extends State<ExerciseListScreen> {
     );
   }
 
+  // 운동 수정 다이얼로그 표시 함수
+  void _showEditExerciseDialog(
+      BuildContext context, Exercise exercise, ExerciseModel exerciseModel) {
+    String editedExerciseName = exercise.name;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('운동 수정'),
+          content: TextField(
+            onChanged: (value) {
+              editedExerciseName = value;
+            },
+            controller: TextEditingController(text: exercise.name),
+            decoration: InputDecoration(hintText: '운동 이름'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('취소'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('저장'),
+              onPressed: () {
+                if (editedExerciseName.isNotEmpty) {
+                  // 운동 수정 및 스낵바 표시
+                  _editExerciseWithSnackbar(
+                      context, exercise, exerciseModel, editedExerciseName);
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 운동 수정 및 스낵바 표시 함수
+  void _editExerciseWithSnackbar(BuildContext context, Exercise exercise,
+      ExerciseModel exerciseModel, String newName) {
+    // 운동 수정
+    var editedExercise = exercise.copyWith(name: newName);
+    exerciseModel.editExercise(exercise, editedExercise);
+
+    // 스낵바 표시
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${exercise.name} 운동을 ${newName}으로 변경했습니다.'),
+        action: SnackBarAction(
+          label: '실행 취소',
+          onPressed: () {
+            // 실행 취소 로직: 원래 운동 이름으로 되돌리기
+            exerciseModel.editExercise(editedExercise, exercise);
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -150,59 +213,6 @@ class _ExerciseListScreenState extends State<ExerciseListScreen> {
             Navigator.pop(context);
           },
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () async {
-              final _formKey = GlobalKey<FormState>();
-              String newName = _bodyPart.name;
-
-              await showDialog<String>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Body Part 이름 변경'),
-                  content: Form(
-                    key: _formKey,
-                    child: TextFormField(
-                      initialValue: _bodyPart.name,
-                      onChanged: (value) => newName = value,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return '이름을 입력하세요.';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('취소'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          Navigator.pop(context, newName);
-                        }
-                      },
-                      child: const Text('확인'),
-                    ),
-                  ],
-                ),
-              );
-
-              if (newName != null && newName.isNotEmpty) {
-                await Provider.of<BodyPartModel>(context, listen: false)
-                    .updateBodyPart(
-                        context, widget.bodyPart, newName); // context 전달
-
-                setState(() {
-                  _bodyPart = _bodyPart.copyWith(name: newName);
-                });
-              }
-            },
-          ),
-        ],
       ),
       body: Consumer<ExerciseModel>(builder: (context, exerciseModel, child) {
         final exercises = exerciseModel.getExercisesByBodyPart(_bodyPart.name);
@@ -212,14 +222,26 @@ class _ExerciseListScreenState extends State<ExerciseListScreen> {
             final exercise = exercises[index];
             return ListTile(
               title: Text(exercise.name),
-              trailing: IconButton(
-                // trailing에 IconButton 추가
-                icon: Icon(Icons.delete),
-                onPressed: () {
-                  // 삭제 확인 다이얼로그 표시
-                  _showDeleteConfirmationDialog(
-                      context, exercise, exerciseModel);
-                },
+              trailing: Wrap(
+                spacing: 8.0,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.edit), // 연필 아이콘 추가
+                    onPressed: () {
+                      // 운동 수정 다이얼로그 표시
+                      _showEditExerciseDialog(context, exercise, exerciseModel);
+                    },
+                  ),
+                  IconButton(
+                    // trailing에 IconButton 추가
+                    icon: Icon(Icons.delete),
+                    onPressed: () {
+                      // 삭제 확인 다이얼로그 표시
+                      _showDeleteConfirmationDialog(
+                          context, exercise, exerciseModel);
+                    },
+                  ),
+                ],
               ),
             );
           },

@@ -27,11 +27,19 @@ class _BodyPartListScreenState extends State<BodyPartListScreen> {
   // _BodyPartScreenState -> _BodyPartListScreenState
   final _formKey = GlobalKey<FormState>();
   final _bodyPartController = TextEditingController();
+  late ExerciseModel _exerciseModel;
 
   @override
   void dispose() {
     _bodyPartController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    _exerciseModel = Provider.of<ExerciseModel>(context, listen: false);
   }
 
   void _showAddBodyPartDialog(BuildContext context) {
@@ -85,6 +93,69 @@ class _BodyPartListScreenState extends State<BodyPartListScreen> {
     );
   }
 
+  // BodyPart 수정 다이얼로그 표시 함수
+  void _showEditBodyPartDialog(
+      BuildContext context, BodyPart bodyPart, BodyPartModel bodyPartModel) {
+    String editedBodyPartName = bodyPart.name;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('${bodyPart.name} 수정'),
+          content: TextField(
+            onChanged: (value) {
+              editedBodyPartName = value;
+            },
+            controller: TextEditingController(text: bodyPart.name),
+            decoration: InputDecoration(hintText: '새로운 부위 이름'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('취소'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('저장'),
+              onPressed: () {
+                if (editedBodyPartName.isNotEmpty) {
+                  // BodyPart 수정 및 스낵바 표시
+                  _editBodyPartWithSnackbar(
+                      context, bodyPart, bodyPartModel, editedBodyPartName);
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // BodyPart 수정 및 스낵바 표시 함수
+  void _editBodyPartWithSnackbar(BuildContext context, BodyPart bodyPart,
+      BodyPartModel bodyPartModel, String newName) {
+    // BodyPart 수정
+    bodyPartModel.updateBodyPart(bodyPart, newName, _exerciseModel);
+
+    // 스낵바 표시
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${bodyPart.name} 부위를 ${newName}으로 변경했습니다.'),
+        action: SnackBarAction(
+          label: '실행 취소',
+          onPressed: () {
+            // 실행 취소 로직: 원래 BodyPart 이름으로 되돌리기
+            bodyPartModel.updateBodyPart(bodyPart.copyWith(name: newName),
+                bodyPart.name, _exerciseModel);
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -127,7 +198,10 @@ class _BodyPartListScreenState extends State<BodyPartListScreen> {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.edit),
-                      onPressed: () {},
+                      onPressed: () {
+                        _showEditBodyPartDialog(
+                            context, bodyPart, bodyPartModel);
+                      },
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete),

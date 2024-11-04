@@ -71,7 +71,7 @@ class BodyPartModel extends ChangeNotifier {
   }
 
   Future<void> updateBodyPart(
-      BuildContext context, BodyPart bodyPart, String newName) async {
+      BodyPart bodyPart, String newName, ExerciseModel exerciseModel) async {
     // context 매개변수 추가
     final index = _bodyParts.indexWhere((e) => e.name == bodyPart.name);
 
@@ -79,8 +79,6 @@ class BodyPartModel extends ChangeNotifier {
       final updatedBodyPart =
           bodyPart.copyWith(name: newName, sortOrder: bodyPart.sortOrder);
 
-      // ExerciseModel을 가져옵니다.
-      final exerciseModel = Provider.of<ExerciseModel>(context, listen: false);
       final exercisesToUpdate =
           await exerciseModel.getExercisesByBodyPart(bodyPart.name);
 
@@ -89,7 +87,8 @@ class BodyPartModel extends ChangeNotifier {
         final updatedExercise = exercise.copyWith(
           bodyPart: updatedBodyPart,
         );
-        exerciseModel.editExercise(updatedExercise); // ExerciseModel 업데이트
+        exerciseModel.editExercise(
+            exercise, updatedExercise); // ExerciseModel 업데이트
       }
 
       // BodyPartModel 업데이트

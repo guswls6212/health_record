@@ -34,11 +34,14 @@ class ExerciseDao {
     });
   }
 
-  Future<void> updateExercise(Exercise exercise) async {
+  Future<void> updateExercise(
+      Exercise originalExercise, Exercise editedExercise) async {
+    // originalExercise 추가
     final db = await _databaseHelper.database;
-    await db.update(DatabaseHelper.tableExercises, exercise.toMap(),
+    await db.update(DatabaseHelper.tableExercises,
+        editedExercise.toMap(), // editedExercise의 정보로 업데이트
         where: '${DatabaseHelper.columnName} = ?',
-        whereArgs: [exercise.name]); // id 대신 name 사용
+        whereArgs: [originalExercise.name]); // 원래 이름으로 검색
   }
 
   Future<void> deleteExercise(String name) async {
