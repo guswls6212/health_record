@@ -3,7 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'src/model/exercise.dart';
-import 'src/screen/home_screen.dart';
+import 'src/screen/history_daily_screen.dart';
 import 'src/screen/step_calendar_screen.dart';
 import 'src/model/workout_record.dart';
 import 'src/screen/settings_screen.dart';
@@ -185,7 +185,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     _widgetOptions = <Widget>[
-      HomeScreen(
+      HistoryDailyScreen(
           appLocalizations: widget.appLocalizations,
           setLocale: widget.setLocale), // AppLocalizations 전달
       StepCalendar(

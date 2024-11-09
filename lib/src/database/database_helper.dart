@@ -32,6 +32,7 @@ class DatabaseHelper {
   static final columnDuration = 'duration';
   static final columnSetNum = 'set_num';
   static final columnSortOrder = 'sort_order';
+  static const String columnOneRM = 'one_rm';
 
   static final tableUsers = 'users';
   static final columnUserEmail = 'user_email';
@@ -95,6 +96,7 @@ class DatabaseHelper {
         $columnWeight REAL,
         $columnReps INTEGER,
         $columnDuration INTEGER,
+        $columnOneRM REAL,
         FOREIGN KEY ($columnWorkoutRecordId) REFERENCES $tableWorkoutRecords($columnId)
       )
     ''');

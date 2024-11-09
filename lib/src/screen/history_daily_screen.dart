@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:health_record/src/screen/add_workout_record_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../model/workout.dart'; // Workout 모델 import
@@ -8,18 +9,18 @@ import 'workout_record_detail_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'settings_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HistoryDailyScreen extends StatefulWidget {
   final AppLocalizations appLocalizations;
   final Function(Locale) setLocale;
-  const HomeScreen(
+  const HistoryDailyScreen(
       {Key? key, required this.appLocalizations, required this.setLocale})
       : super(key: key);
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HistoryDailyScreen> createState() => _HistoryDailyScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HistoryDailyScreenState extends State<HistoryDailyScreen> {
   @override
   void initState() {
     super.initState();
@@ -92,6 +93,18 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        // FloatingActionButton 추가
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddWorkoutRecordScreen(),
+            ),
+          );
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
