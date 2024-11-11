@@ -1,49 +1,45 @@
+// workout_record.dart
 import 'package:flutter/foundation.dart';
 import '../database/database_helper.dart';
 import '../database/dao/workout_record_dao.dart';
 import 'exercise.dart';
-import 'workout_set.dart'; // WorkoutSet import 추가
+import 'workout_set.dart';
 
 class WorkoutRecord {
   final String id;
-  final Exercise exercise;
+  final String exerciseName; // Exercise 객체 대신 exerciseName 사용
   final DateTime date;
-  final List<WorkoutSet> sets; // WorkoutSet 객체 리스트로 변경
+  final List<WorkoutSet> sets;
   int? syncStatus;
 
   WorkoutRecord({
     required this.id,
-    required this.exercise,
+    required this.exerciseName, // exerciseName 필드 추가
     required this.date,
     required this.sets,
     this.syncStatus,
   });
 
   factory WorkoutRecord.fromMap(Map<String, dynamic> map) {
-    // map['sets']는 List<WorkoutSet>으로 변환되어야 함
     final sets = (map['sets'] as List<dynamic>)
         .map((set) => WorkoutSet.fromMap(set as Map<String, dynamic>))
         .toList();
 
     return WorkoutRecord(
       id: map[DatabaseHelper.columnId] as String,
-      exercise: Exercise.fromMap(
-          map[DatabaseHelper.columnExerciseName] as Map<String, dynamic>),
+      exerciseName:
+          map[DatabaseHelper.columnExerciseName] as String, // exerciseName 읽어오기
       date: DateTime.parse(map[DatabaseHelper.columnDate] as String),
-      sets: sets, // 변환된 sets 사용
+      sets: sets,
       syncStatus: map[DatabaseHelper.columnSyncStatus] as int?,
     );
   }
 
   Map<String, dynamic> toMap() {
-    // sets를 Map<String, dynamic>의 List로 변환
-    final setsList = sets.map((set) => set.toMap()).toList();
-
     return {
       DatabaseHelper.columnId: id,
-      DatabaseHelper.columnExerciseName: exercise.toMap(),
+      DatabaseHelper.columnExerciseName: exerciseName, // exerciseName 저장
       DatabaseHelper.columnDate: date.toIso8601String(),
-      DatabaseHelper.columnSets: setsList, // 변환된 setsList 사용
       DatabaseHelper.columnSyncStatus: syncStatus,
     };
   }

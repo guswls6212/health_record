@@ -1,6 +1,6 @@
 // user_model.dart
 import 'package:flutter/foundation.dart';
-import '../database/database_helper.dart';
+import '../database/dao/user_dao.dart'; // UserDao import
 
 // user.dart
 class User {
@@ -56,33 +56,30 @@ class User {
 }
 
 class UserModel extends ChangeNotifier {
+  final UserDao _userDao = UserDao(); // UserDao 인스턴스 생성
   User? _currentUser;
 
   User? get currentUser => _currentUser;
 
   Future<void> loadUser(String email) async {
-    final dbHelper = DatabaseHelper();
-    _currentUser = await dbHelper.getUser(email);
+    _currentUser = await _userDao.getUser(email); // UserDao 호출
     notifyListeners();
   }
 
   Future<void> addUser(User user) async {
-    final dbHelper = DatabaseHelper();
-    await dbHelper.insertUser(user);
+    await _userDao.insertUser(user); // UserDao 호출
     _currentUser = user;
     notifyListeners();
   }
 
   Future<void> updateUser(User user) async {
-    final dbHelper = DatabaseHelper();
-    await dbHelper.updateUser(user);
+    await _userDao.updateUser(user); // UserDao 호출
     _currentUser = user;
     notifyListeners();
   }
 
   Future<void> deleteUser(String email) async {
-    final dbHelper = DatabaseHelper();
-    await dbHelper.deleteUser(email);
+    await _userDao.deleteUser(email); // UserDao 호출
     _currentUser = null;
     notifyListeners();
   }

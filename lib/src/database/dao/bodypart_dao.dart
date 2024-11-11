@@ -9,7 +9,7 @@ class BodyPartDao {
   Future<BodyPart?> getBodyPartByName(String name) async {
     final db = await _databaseHelper.database;
     final maps = await db.query(
-      DatabaseHelper.tableBodyParts, // 'body_parts' 테이블에서 조회
+      DatabaseHelper.tableBodyParts,
       where: '${DatabaseHelper.columnName} = ?',
       whereArgs: [name],
     );
@@ -28,35 +28,40 @@ class BodyPartDao {
 
   Future<List<BodyPart>> getBodyParts() async {
     final db = await _databaseHelper.database;
-    final List<Map<String, dynamic>> maps =
-        await db.query(DatabaseHelper.tableBodyParts);
+    final List<Map<String, dynamic>> maps = await db.query(
+      DatabaseHelper.tableBodyParts,
+      orderBy: '${DatabaseHelper.columnSortOrder} ASC',
+    );
     return List.generate(maps.length, (i) {
       return BodyPart.fromMap(maps[i]);
     });
   }
 
   Future<void> updateBodyPart(BodyPart bodyPart, String oldName) async {
-    // oldName 매개변수 추가
     final db = await _databaseHelper.database;
     await db.update(
       DatabaseHelper.tableBodyParts,
       bodyPart.toMap(),
       where: '${DatabaseHelper.columnName} = ?',
-      whereArgs: [oldName], // where 조건에 oldName 사용
+      whereArgs: [oldName],
     );
   }
 
   Future<void> deleteBodyPart(String name) async {
     final db = await _databaseHelper.database;
-    await db.delete(DatabaseHelper.tableBodyParts,
-        where: '${DatabaseHelper.columnName} = ?', whereArgs: [name]);
+    await db.delete(
+      DatabaseHelper.tableBodyParts,
+      where: '${DatabaseHelper.columnName} = ?',
+      whereArgs: [name],
+    );
   }
 
   Future<int> getLastSortOrder() async {
     final db = await _databaseHelper.database;
     final result = await db.rawQuery(
-        'SELECT MAX(sort_order) FROM ${DatabaseHelper.tableBodyParts}');
-    return (result.first['MAX(sort_order)'] as int?) ?? -1; // null일 경우 -1 반환
+        'SELECT MAX(${DatabaseHelper.columnSortOrder}) FROM ${DatabaseHelper.tableBodyParts}');
+    return (result.first['MAX(${DatabaseHelper.columnSortOrder})'] as int?) ??
+        0;
   }
 
   Future<bool> hasDefaultBodyParts() async {

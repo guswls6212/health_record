@@ -74,7 +74,7 @@ class _HistoryDailyScreenState extends State<HistoryDailyScreen> {
                   children: workout.records.map((record) {
                     return ListTile(
                       leading: const Icon(Icons.fitness_center),
-                      title: Text(record.exercise.name),
+                      title: Text(record.exerciseName),
                       subtitle: Text('${record.sets.length}세트'),
                       onTap: () {
                         Navigator.push(

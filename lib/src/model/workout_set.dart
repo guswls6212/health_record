@@ -32,8 +32,24 @@ class WorkoutSet {
       DatabaseHelper.columnSetNum: set,
       DatabaseHelper.columnWeight: weight,
       DatabaseHelper.columnReps: reps,
-      DatabaseHelper.columnDuration: duration,
+      DatabaseHelper.columnDuration: 0,
       DatabaseHelper.columnOneRM: oneRM, // oneRM 추가
     };
+  }
+
+  WorkoutSet copyWith({
+    int? set,
+    double? weight,
+    int? reps,
+    int? duration,
+    double? oneRM,
+  }) {
+    return WorkoutSet(
+      set: set ?? this.set,
+      weight: weight ?? this.weight,
+      reps: reps ?? this.reps,
+      duration: duration ?? this.duration,
+      oneRM: oneRM ?? this.oneRM,
+    );
   }
 }

@@ -22,12 +22,12 @@ class WorkoutRecordDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '운동 이름: ${workoutRecord.exercise.name}', // exercise.name으로 변경
+              '운동 이름: ${workoutRecord.exerciseName}', // exercise.name으로 변경
               style: const TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 8.0),
             Text(
-              '운동 부위: ${workoutRecord.exercise.bodyPart.name}', // exercise.bodyPart.name으로 변경
+              '운동 부위: ${workoutRecord.exerciseName}', // exercise.bodyPart.name으로 변경
               style: const TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 8.0),
