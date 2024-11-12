@@ -1,5 +1,6 @@
 import '../../model/workout_record.dart';
 import '../../model/workout_set.dart';
+import '../../database/dao/workout_set_dao.dart';
 import '../database_helper.dart';
 import 'package:uuid/uuid.dart';
 
@@ -33,24 +34,13 @@ class WorkoutRecordDao {
     final List<Map<String, dynamic>> workoutRecordMaps =
         await db.query(DatabaseHelper.tableWorkoutRecords);
 
+    final workoutSetDao = WorkoutSetDao(); // WorkoutSetDao 인스턴스 생성
+
     final workoutRecords =
         await Future.wait(workoutRecordMaps.map((recordMap) async {
       final workoutRecordId = recordMap['id'] as String;
-      final List<Map<String, dynamic>> workoutSetMaps = await db.query(
-        DatabaseHelper.tableWorkoutSets,
-        where: '${DatabaseHelper.columnWorkoutRecordId} = ?',
-        whereArgs: [workoutRecordId],
-      );
-
-      final sets = workoutSetMaps.map((setMap) {
-        return WorkoutSet(
-          set: setMap['set_num'] as int?,
-          weight: setMap['weight'] as double?,
-          reps: setMap['reps'] as int?,
-          duration: setMap['duration'] as int?,
-          oneRM: setMap['one_rm'] as double?,
-        );
-      }).toList();
+      final sets = await workoutSetDao.getWorkoutSetsByRecordId(
+          workoutRecordId); // WorkoutSetDao를 사용하여 WorkoutSet 가져오기
 
       return WorkoutRecord.fromMap({...recordMap, 'sets': sets});
     }));

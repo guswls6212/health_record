@@ -20,13 +20,13 @@ class _AddWorkoutRecordScreenState extends State<AddWorkoutRecordScreen> {
   Exercise? _selectedExercise; // nullable로 변경
   List<WorkoutSet> _sets = [];
   bool _showSearchField = true;
+  bool _showSetBtnField = false;
   final FocusNode _exerciseFocusNode = FocusNode(); // FocusNode 추가
 
   @override
   void initState() {
     super.initState();
     _selectedDate = DateTime.now();
-    _sets.add(WorkoutSet());
 
     // FocusNode 초기화 및 리스너 추가
     _exerciseFocusNode.addListener(() {
@@ -163,8 +163,13 @@ class _AddWorkoutRecordScreenState extends State<AddWorkoutRecordScreen> {
                                   // 확인을 누르면 운동 변경
                                   setState(() {
                                     _selectedExercise = suggestion;
+                                    // 선택된 운동 표시 및 돋보기 아이콘 표시
                                     _showSearchField = false;
+                                    // 세트입력란, 세트추가, 저장 버튼 표시
+                                    _showSetBtnField = true;
+                                    // 세트입력란 값 초기화
                                     _formKey.currentState!.reset();
+                                    // 1세트 추가
                                     _sets = [WorkoutSet()]; // 1세트만 남기고 초기화
                                   });
                                 }
@@ -203,37 +208,40 @@ class _AddWorkoutRecordScreenState extends State<AddWorkoutRecordScreen> {
                     return _buildSetWidget(index);
                   },
                 ),
-                ElevatedButton(
-                  onPressed: _addSet,
-                  child: const Text('세트 추가'),
-                ),
-                const SizedBox(height: 16.0),
-                ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      if (_selectedExercise == null) {
-                        // 운동을 선택하지 않은 경우 경고 메시지 표시
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('운동을 선택하세요.')),
-                        );
-                        _exerciseFocusNode.requestFocus(); // 운동 선택란에 포커스 이동
-                        return;
-                      }
+                // 운동선택이후에 버튼 나오게 조건식추가
+                if (_showSetBtnField) ...[
+                  ElevatedButton(
+                    onPressed: _addSet,
+                    child: const Text('세트 추가'),
+                  ),
+                  const SizedBox(height: 16.0),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        if (_selectedExercise == null) {
+                          // 운동을 선택하지 않은 경우 경고 메시지 표시
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('운동을 선택하세요.')),
+                          );
+                          _exerciseFocusNode.requestFocus(); // 운동 선택란에 포커스 이동
+                          return;
+                        }
 
-                      final newRecord = WorkoutRecord(
-                        id: const Uuid().v4(),
-                        exerciseName: _selectedExercise!
-                            .name, // _selectedExercise가 null이 아님을 보장
-                        date: _selectedDate,
-                        sets: _sets,
-                      );
-                      Provider.of<WorkoutRecordModel>(context, listen: false)
-                          .addWorkoutRecord(newRecord);
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: const Text('저장'),
-                ),
+                        final newRecord = WorkoutRecord(
+                          id: const Uuid().v4(),
+                          exerciseName: _selectedExercise!
+                              .name, // _selectedExercise가 null이 아님을 보장
+                          date: _selectedDate,
+                          sets: _sets,
+                        );
+                        Provider.of<WorkoutRecordModel>(context, listen: false)
+                            .addWorkoutRecord(newRecord);
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: const Text('저장'),
+                  ),
+                ],
               ],
             ),
           ),

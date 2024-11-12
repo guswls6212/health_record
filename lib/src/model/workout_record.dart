@@ -21,16 +21,12 @@ class WorkoutRecord {
   });
 
   factory WorkoutRecord.fromMap(Map<String, dynamic> map) {
-    final sets = (map['sets'] as List<dynamic>)
-        .map((set) => WorkoutSet.fromMap(set as Map<String, dynamic>))
-        .toList();
-
     return WorkoutRecord(
       id: map[DatabaseHelper.columnId] as String,
       exerciseName:
           map[DatabaseHelper.columnExerciseName] as String, // exerciseName 읽어오기
       date: DateTime.parse(map[DatabaseHelper.columnDate] as String),
-      sets: sets,
+      sets: map['sets'],
       syncStatus: map[DatabaseHelper.columnSyncStatus] as int?,
     );
   }
