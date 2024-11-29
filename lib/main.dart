@@ -132,6 +132,37 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+          // 머티리얼 3 사용
+          useMaterial3: true,
+          textTheme: const TextTheme(
+            titleLarge: TextStyle(color: Colors.white),
+          ),
+          //기본 색상 설정
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1976D2)),
+          scaffoldBackgroundColor: const Color(0xFF212529),
+          appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF212529),
+              titleTextStyle: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold)
+              // Theme.of(context).textTheme.titleLarge,
+              ),
+          bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+            backgroundColor: Color(0xFF212529),
+            unselectedItemColor: Colors.white,
+            selectedItemColor: Color(0xFF1976D2),
+            elevation: 4.0,
+          ),
+          navigationBarTheme: NavigationBarThemeData(
+            backgroundColor: const Color(0xFF212529),
+            indicatorColor: const Color(0xFF1976D2),
+            iconTheme: WidgetStateProperty.all(
+                const IconThemeData(color: Colors.white)),
+            labelTextStyle:
+                WidgetStateProperty.all(const TextStyle(color: Colors.white)),
+          )),
       locale: _locale,
       localizationsDelegates: [
         AppLocalizations.delegate,
@@ -188,9 +219,9 @@ class _MainScreenState extends State<MainScreen> {
       HistoryDailyScreen(
           appLocalizations: widget.appLocalizations,
           setLocale: widget.setLocale), // AppLocalizations 전달
-      StepCalendar(
-          appLocalizations: widget.appLocalizations,
-          setLocale: widget.setLocale), // AppLocalizations 전달
+      // StepCalendar(
+      //     appLocalizations: widget.appLocalizations,
+      //     setLocale: widget.setLocale), // AppLocalizations 전달
       BodyPartListScreen(
           appLocalizations: widget.appLocalizations,
           setLocale: widget.setLocale),
@@ -200,16 +231,42 @@ class _MainScreenState extends State<MainScreen> {
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar:
+          // NavigationBar(
+          //   onDestinationSelected: (int index) {
+          //     setState(() {
+          //       _selectedIndex = index;
+          //     });
+          //   },
+          //   // indicatorColor: Colors.amber,
+          //   selectedIndex: _selectedIndex,
+          //   destinations: const <Widget>[
+          //     NavigationDestination(
+          //       // selectedIcon: Icon(Icons.home),
+          //       icon: Icon(Icons.date_range),
+          //       label: '여정',
+          //     ),
+          //     // NavigationDestination(
+          //     //   icon: Icon(Icons.calendar_today),
+          //     //   label: '여정',
+          //     // ),
+          //     NavigationDestination(
+          //       icon: Icon(Icons.fitness_center),
+          //       label: '운동 종류',
+          //     ),
+          //   ],
+          // ),
+
+          BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '홈',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
+            icon: Icon(Icons.date_range),
             label: '여정',
           ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.calendar_today),
+          //   label: '여정',
+          // ),
           BottomNavigationBarItem(
             icon: Icon(Icons.fitness_center),
             label: '운동 종류',

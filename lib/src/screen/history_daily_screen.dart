@@ -33,9 +33,12 @@ class _HistoryDailyScreenState extends State<HistoryDailyScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Center(
-            child: Text(DateFormat(widget.appLocalizations.date,
-                    widget.appLocalizations.localeName)
-                .format(DateTime.now()))),
+            child: Text(
+          DateFormat(widget.appLocalizations.date,
+                  widget.appLocalizations.localeName)
+              .format(DateTime.now()),
+          // style: Theme.of(context).textTheme.titleLarge,
+        )),
         actions: [
           IconButton(
             icon: Icon(Icons.settings),
