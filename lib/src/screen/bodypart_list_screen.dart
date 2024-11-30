@@ -179,8 +179,14 @@ class _BodyPartListScreenState extends State<BodyPartListScreen> {
                   exerciseModel.getExercisesByBodyPart(bodyPart.name);
 
               return ListTile(
-                title: Text('${bodyPart.name} (${exercises.length})'),
-                subtitle: Text(exercises.map((e) => e.name).join(', ')),
+                title: Text(
+                  '${bodyPart.name} (${exercises.length})',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                subtitle: Text(
+                  exercises.map((e) => e.name).join(', '),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -197,14 +203,14 @@ class _BodyPartListScreenState extends State<BodyPartListScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.edit),
+                      icon: const Icon(Icons.edit, color: Colors.white),
                       onPressed: () {
                         _showEditBodyPartDialog(
                             context, bodyPart, bodyPartModel);
                       },
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete),
+                      icon: const Icon(Icons.delete, color: Colors.white),
                       onPressed: () {},
                     ),
                   ],

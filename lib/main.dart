@@ -133,13 +133,17 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
+          primaryColor: const Color(0xFF1976D2),
+
           // 머티리얼 3 사용
           useMaterial3: true,
           textTheme: const TextTheme(
+            displaySmall: TextStyle(color: Color(0xFF4CAF50)),
             titleLarge: TextStyle(color: Colors.white),
+            bodyMedium: TextStyle(color: Colors.white),
           ),
           //기본 색상 설정
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1976D2)),
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4CAF50)),
           scaffoldBackgroundColor: const Color(0xFF212529),
           appBarTheme: const AppBarTheme(
               backgroundColor: Color(0xFF212529),

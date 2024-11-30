@@ -41,7 +41,7 @@ class _HistoryDailyScreenState extends State<HistoryDailyScreen> {
         )),
         actions: [
           IconButton(
-            icon: Icon(Icons.settings),
+            icon: const Icon(Icons.settings, color: Colors.white),
             onPressed: () {
               Navigator.push(
                 context,

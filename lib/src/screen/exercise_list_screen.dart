@@ -200,6 +200,7 @@ class _ExerciseListScreenState extends State<ExerciseListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        iconTheme: const IconThemeData(color: Colors.white),
         title: Consumer<BodyPartModel>(
           builder: (context, bodyPartModel, child) {
             final bodyPart = bodyPartModel.bodyParts
@@ -221,12 +222,14 @@ class _ExerciseListScreenState extends State<ExerciseListScreen> {
           itemBuilder: (context, index) {
             final exercise = exercises[index];
             return ListTile(
-              title: Text(exercise.name),
+              title: Text(exercise.name,
+                  style: Theme.of(context).textTheme.titleLarge),
               trailing: Wrap(
                 spacing: 8.0,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.edit), // 연필 아이콘 추가
+                    icon: const Icon(Icons.edit,
+                        color: Colors.white), // 연필 아이콘 추가
                     onPressed: () {
                       // 운동 수정 다이얼로그 표시
                       _showEditExerciseDialog(context, exercise, exerciseModel);
@@ -234,7 +237,7 @@ class _ExerciseListScreenState extends State<ExerciseListScreen> {
                   ),
                   IconButton(
                     // trailing에 IconButton 추가
-                    icon: Icon(Icons.delete),
+                    icon: const Icon(Icons.delete, color: Colors.white),
                     onPressed: () {
                       // 삭제 확인 다이얼로그 표시
                       _showDeleteConfirmationDialog(
