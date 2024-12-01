@@ -59,12 +59,38 @@ class _HistoryDailyScreenState extends State<HistoryDailyScreen> {
       ),
       body: Consumer<WorkoutRecordModel>(
         builder: (context, workoutRecordModel, child) {
+          if (workoutRecordModel.workoutRecords.isEmpty) {
+            return Center(
+              child: Text('No workout records'),
+              // Text(widget.appLocalizations.noWorkoutRecords),
+            );
+          }
+
           // WorkoutRecord를 날짜별로 그룹화
           final groupedWorkouts = groupBy(
               workoutRecordModel.workoutRecords, (WorkoutRecord r) => r.date);
-          final workoutList = groupedWorkouts.entries
-              .map((entry) => Workout(date: entry.key, records: entry.value))
-              .toList();
+          final workoutList = <Workout>[];
+
+          for (var entry in groupedWorkouts.entries) {
+            // 날짜에서 년월일만 추출
+            final date =
+                DateTime(entry.key.year, entry.key.month, entry.key.day);
+
+            // 같은 날짜의 Workout이 이미 있는지 확인
+            final existingWorkout =
+                workoutList.firstWhereOrNull((workout) => workout.date == date);
+
+            if (existingWorkout != null) {
+              // 이미 있는 Workout에 records 추가
+              existingWorkout.records.addAll(entry.value);
+            } else {
+              // 새로운 Workout 생성
+              workoutList.add(Workout(date: date, records: entry.value));
+            }
+          }
+
+          // 최신 날짜부터 정렬
+          workoutList.sort((a, b) => b.date.compareTo(a.date));
 
           return ListView.builder(
             itemCount: workoutList.length,
@@ -73,7 +99,11 @@ class _HistoryDailyScreenState extends State<HistoryDailyScreen> {
 
               return Card(
                 child: ExpansionTile(
-                  title: Text(DateFormat('yyyy-MM-dd').format(workout.date)),
+                  shape: Border.all(color: Colors.transparent),
+                  initiallyExpanded: true,
+                  trailing: const SizedBox.shrink(),
+                  title: Text(DateFormat('dd').format(workout.date),
+                      style: Theme.of(context).textTheme.titleLarge),
                   children: workout.records.map((record) {
                     return ListTile(
                       leading: const Icon(Icons.fitness_center),

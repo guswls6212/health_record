@@ -139,7 +139,8 @@ class _MyAppState extends State<MyApp> {
           useMaterial3: true,
           textTheme: const TextTheme(
             displaySmall: TextStyle(color: Color(0xFF4CAF50)),
-            titleLarge: TextStyle(color: Colors.white),
+            titleLarge:
+                TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             bodyMedium: TextStyle(color: Colors.white),
           ),
           //기본 색상 설정
@@ -166,6 +167,9 @@ class _MyAppState extends State<MyApp> {
                 const IconThemeData(color: Colors.white)),
             labelTextStyle:
                 WidgetStateProperty.all(const TextStyle(color: Colors.white)),
+          ),
+          cardTheme: const CardTheme(
+            color: Color(0xFF303030),
           )),
       locale: _locale,
       localizationsDelegates: [

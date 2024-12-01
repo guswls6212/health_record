@@ -2,7 +2,6 @@
 import 'package:flutter/foundation.dart';
 import '../database/database_helper.dart';
 import '../database/dao/workout_record_dao.dart';
-import 'exercise.dart';
 import 'workout_set.dart';
 
 class WorkoutRecord {
